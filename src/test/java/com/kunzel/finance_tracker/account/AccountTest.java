@@ -6,14 +6,11 @@ import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.kunzel.finance_tracker.account.exceptions.InvalidBalanceException;
 
 import static org.assertj.core.api.Assertions.*;
 
-@ExtendWith(MockitoExtension.class)
 class AccountTest {
   Account account;
 
