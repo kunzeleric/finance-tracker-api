@@ -24,18 +24,18 @@ public class Account {
 
   @Column(nullable = false)
   @NotBlank(message = "Nome da conta não pode estar vazio")
-  String name;
+  private String name;
 
   @Column(nullable = false)
   @PositiveOrZero(message = "Saldo inicial não pode ser negativo")
-  BigDecimal balance;
+  private BigDecimal balance;
 
   @Column(nullable = false)
-  LocalDate creationDate;
+  private LocalDate creationDate;
 
   @Column(nullable = false)
   @NotBlank(message = "Tipo de conta não pode estar vazio")
-  AccountType type;
+  private AccountType type;
 
   protected Account() {
   }
