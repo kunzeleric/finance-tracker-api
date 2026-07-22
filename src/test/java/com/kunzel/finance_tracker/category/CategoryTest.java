@@ -39,6 +39,16 @@ public class CategoryTest {
     void shouldThrowExceptionWhenCustomCategoryTypeIsEmpty() {
       assertThatThrownBy(() -> new Category("Natação", null)).isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void shouldThrowExceptionWhenCustomCategoryNameIsBlank() {
+      assertThatThrownBy(() -> new Category("  ", CategoryType.INCOME)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCustomCategoryNameIsNull() {
+      assertThatThrownBy(() -> new Category(null, CategoryType.INCOME)).isInstanceOf(IllegalArgumentException.class);
+    }
   }
 
   @Nested
