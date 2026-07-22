@@ -60,9 +60,15 @@ public class CategoryTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenRenamingCustomCategoryWithEmptyName() {
+    void shouldThrowExceptionWhenRenamingCustomCategoryWithNullName() {
       Category customCategory = new Category("Freelance", CategoryType.INCOME);
       assertThatThrownBy(() -> customCategory.rename(null)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenRenamingCustomCategoryWithEmptyName() {
+      Category customCategory = new Category("Freelance", CategoryType.INCOME);
+      assertThatThrownBy(() -> customCategory.rename("")).isInstanceOf(IllegalArgumentException.class);
     }
   }
 
@@ -82,7 +88,7 @@ public class CategoryTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenChangingCustomCategoryTypeToEmpty() {
+    void shouldThrowExceptionWhenChangingCustomCategoryTypeToNull() {
       Category customCategory = new Category("Natação", CategoryType.INCOME);
       assertThatThrownBy(() -> customCategory.changeType(null)).isInstanceOf(IllegalArgumentException.class);
     }
