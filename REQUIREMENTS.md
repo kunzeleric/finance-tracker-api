@@ -12,7 +12,7 @@ Domínio: controle financeiro pessoal — transações, categorias, contas e or�
 
 - `Conta` (ex: carteira, banco X, cartão Y)
 - `Categoria` (ex: alimentação, transporte, salário)
-- `Transação` (valor, data, tipo [receita/despesa], categoria, conta)
+- `Transação` (valor, data, categoria, conta) — o tipo (receita/despesa) é herdado da categoria
 
 ### Requisitos funcionais
 
@@ -23,14 +23,14 @@ Domínio: controle financeiro pessoal — transações, categorias, contas e or�
 
 **RF02 — Cadastrar categoria**
 
-- Critério: categoria tem nome e tipo (receita ou despesa).
+- Critério: categoria tem nome e tipo (receita ou despesa) — o tipo é atributo da categoria, não da transação.
 - Critério: não deve permitir duas categorias com o mesmo nome e mesmo tipo.
 
 **RF03 — Cadastrar transação**
 
-- Critério: transação tem valor (positivo), data, tipo, categoria e conta associados.
-- Critério: o tipo da transação deve ser compatível com o tipo da categoria (ex: transação de despesa não pode usar categoria de receita).
-- Critério: ao criar a transação, o saldo da conta associada deve ser atualizado (receita soma, despesa subtrai).
+- Critério: transação tem valor (positivo), data, categoria e conta associados.
+- Critério: a transação não possui tipo próprio; o tipo (receita/despesa) é derivado da categoria associada.
+- Critério: ao criar a transação, o saldo da conta associada deve ser atualizado conforme o tipo da categoria (receita soma, despesa subtrai).
 
 **RF04 — Listar transações**
 
