@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,6 +17,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import com.kunzel.finance_tracker.account.exceptions.InsufficientBalanceException;
 import com.kunzel.finance_tracker.account.exceptions.InvalidBalanceException;
+
+import tools.jackson.databind.DatabindException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -33,6 +36,35 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         HttpStatus.BAD_REQUEST, "Um ou mais campos estão inválidos.");
     problemDetail.setTitle("Requisição Inválida");
     problemDetail.setProperty("errors", errors);
+
+    return ResponseEntity.badRequest().body(problemDetail);
+  }
+
+  @Override
+  protected ResponseEntity<Object> handleHttpMessageNotReadable(
+      HttpMessageNotReadableException ex, HttpHeaders headers,
+      HttpStatusCode status, WebRequest request) {
+
+    Throwable cause = ex.getCause();
+
+    if (cause instanceof DatabindException jme) {
+      Throwable rootCause = jme.getCause();
+
+      String message = (rootCause instanceof IllegalArgumentException && rootCause.getMessage() != null)
+          ? rootCause.getMessage()
+          : "Valor inválido no corpo da requisição.";
+
+      ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+          HttpStatus.BAD_REQUEST, "Um ou mais campos estão inválidos.");
+      problemDetail.setTitle("Requisição Inválida");
+      problemDetail.setProperty("errors", List.of(message));
+
+      return ResponseEntity.badRequest().body(problemDetail);
+    }
+
+    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+        HttpStatus.BAD_REQUEST, "Corpo da requisição malformado.");
+    problemDetail.setTitle("Requisição Inválida");
 
     return ResponseEntity.badRequest().body(problemDetail);
   }
