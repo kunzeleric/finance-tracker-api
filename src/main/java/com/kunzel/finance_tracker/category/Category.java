@@ -11,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 public class Category {
@@ -25,7 +26,7 @@ public class Category {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  @NotBlank(message = "Tipo da categoria não pode estar vazio")
+  @NotNull(message = "Tipo da categoria não pode estar vazio")
   private CategoryType type;
 
   @Column(nullable = false)
