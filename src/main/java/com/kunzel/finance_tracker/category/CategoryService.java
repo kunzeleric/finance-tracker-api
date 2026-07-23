@@ -29,4 +29,15 @@ public class CategoryService {
   public Category createDefaultCategory(String name, CategoryType type) {
     return categoryRepository.save(Category.createDefault(name, type));
   }
+
+  public Category updateCategory(Long categoryId, String name, CategoryType type) {
+    Category categoryToUpdate = categoryRepository.getReferenceById(categoryId);
+    categoryToUpdate.updateDetails(name, type);
+    return categoryToUpdate;
+  }
+
+  public void removeCategory(Long categoryId) {
+    Category categoryToRemove = getCategoryById(categoryId);
+    categoryRepository.delete(categoryToRemove);
+  }
 }
