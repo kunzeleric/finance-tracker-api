@@ -19,7 +19,7 @@ Progresso de implementação dos requisitos da V1. Marque cada item conforme con
 ### RF02 — Cadastrar categoria
 
 - [x] Categoria tem nome e tipo (receita ou despesa)
-- [ ] Não permitir duas categorias com o mesmo nome e mesmo tipo
+- [x] Não permitir duas categorias com o mesmo nome e mesmo tipo
 
 ### RF03 — Cadastrar transação
 
