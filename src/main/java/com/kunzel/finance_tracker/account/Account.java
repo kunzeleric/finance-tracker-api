@@ -8,11 +8,14 @@ import com.kunzel.finance_tracker.account.exceptions.InvalidBalanceException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
 @Entity
@@ -33,8 +36,9 @@ public class Account {
   @Column(nullable = false)
   private LocalDate creationDate;
 
+  @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  @NotBlank(message = "Tipo de conta não pode estar vazio")
+  @NotNull(message = "Tipo de conta não pode estar vazio")
   private AccountType type;
 
   protected Account() {
@@ -55,10 +59,6 @@ public class Account {
     return name;
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
-
   public BigDecimal getBalance() {
     return balance;
   }
@@ -71,6 +71,15 @@ public class Account {
     return type;
   }
 
+  public void changeType(AccountType newType) {
+    if (newType == null) {
+      throw new IllegalArgumentException("Tipo da conta inválido.");
+    }
+    // TODO: validar se é uma mudança permitida
+    // TODO: registrar um log/auditoria da mudança
+    this.type = newType;
+  }
+
   public static Account create(String name, BigDecimal balance, AccountType type) {
     if (balance.compareTo(BigDecimal.ZERO) < 0) {
       throw new InvalidBalanceException(balance);
@@ -81,10 +90,23 @@ public class Account {
     }
 
     if (type == null) {
-      throw new IllegalArgumentException("Tipo da Conta inválido.");
+      throw new IllegalArgumentException("Tipo da conta inválido.");
     }
 
     return new Account(name, balance, type);
+  }
+
+  public void updateDetails(String name, AccountType type) {
+    if (name != null) {
+      if (name.isBlank()) {
+        throw new IllegalArgumentException("Nome da conta não pode estar vazio");
+      }
+      this.name = name;
+    }
+
+    if (type != null) {
+      changeType(type);
+    }
   }
 
   public void deposit(BigDecimal amount) {
