@@ -21,12 +21,12 @@ public class Category {
   private Long id;
 
   @Column(nullable = false)
-  @NotBlank(message = "Nome da categoria não pode estar vazio")
+  @NotBlank(message = "Nome da categoria não pode estar em branco")
   private String name;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  @NotNull(message = "Tipo da categoria não pode estar vazio")
+  @NotNull(message = "Tipo da categoria não pode estar em branco")
   private CategoryType type;
 
   @Column(nullable = false)
@@ -40,11 +40,11 @@ public class Category {
 
   private Category(String name, CategoryType type, Boolean isDefault) {
     if (name == null || name.isBlank()) {
-      throw new IllegalArgumentException("Nome da categoria nao pode estar vazio");
+      throw new IllegalArgumentException("Nome da categoria nao pode estar em branco");
     }
 
     if (type == null) {
-      throw new IllegalArgumentException("Tipo da categoria nao pode estar vazio");
+      throw new IllegalArgumentException("Tipo da categoria nao pode estar em branco");
     }
 
     this.name = name;
@@ -79,7 +79,7 @@ public class Category {
     }
 
     if (newName == null || newName.isBlank()) {
-      throw new IllegalArgumentException("Nome de categoria não pode estar vazio");
+      throw new IllegalArgumentException("Nome de categoria não pode estar em branco");
     }
 
     this.name = newName;
@@ -91,10 +91,15 @@ public class Category {
     }
 
     if (type == null) {
-      throw new IllegalArgumentException("Tipo de categoria não pode estar vazio");
+      throw new IllegalArgumentException("Tipo de categoria não pode estar em branco");
     }
 
     this.type = type;
+  }
+
+  public void updateDetails(String name, CategoryType type) {
+    rename(name);
+    changeType(type);
   }
 
   public static Category createDefault(String name, CategoryType type) {
