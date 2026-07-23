@@ -16,7 +16,7 @@ class AccountTest {
 
   @BeforeEach
   void setup() {
-    account = new Account("Nubank Conta Corrente", new BigDecimal(1000.00), AccountType.CHECKING);
+    account = Account.create("Nubank Conta Corrente", new BigDecimal(1000.00), AccountType.CHECKING);
   }
 
   @Nested
@@ -32,19 +32,19 @@ class AccountTest {
 
     @Test
     void shouldThrowExceptionWhenInitialBalanceIsNegative() {
-      assertThatThrownBy(() -> new Account("Poupança", new BigDecimal(-10.00), AccountType.SAVINGS))
+      assertThatThrownBy(() -> Account.create("Poupança", new BigDecimal(-10.00), AccountType.SAVINGS))
           .isInstanceOf(InvalidBalanceException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenNameIsEmpty() {
-      assertThatThrownBy(() -> new Account("", new BigDecimal(10.00), AccountType.SAVINGS))
+      assertThatThrownBy(() -> Account.create("", new BigDecimal(10.00), AccountType.SAVINGS))
           .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenAccountTypeIsEmpty() {
-      assertThatThrownBy(() -> new Account("", new BigDecimal(10.00), null))
+      assertThatThrownBy(() -> Account.create("", new BigDecimal(10.00), null))
           .isInstanceOf(IllegalArgumentException.class);
     }
   }

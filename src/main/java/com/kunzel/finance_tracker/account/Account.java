@@ -40,19 +40,7 @@ public class Account {
   protected Account() {
   }
 
-  public Account(String name, BigDecimal balance, AccountType type) {
-    if (balance.compareTo(BigDecimal.ZERO) < 0) {
-      throw new InvalidBalanceException(balance);
-    }
-
-    if (name == null || name.isBlank()) {
-      throw new IllegalArgumentException("Nome da conta não pode estar vazio.");
-    }
-
-    if (type == null) {
-      throw new IllegalArgumentException("Tipo da Conta inválido.");
-    }
-
+  private Account(String name, BigDecimal balance, AccountType type) {
     this.name = name;
     this.balance = balance;
     this.type = type;
@@ -81,6 +69,22 @@ public class Account {
 
   public AccountType getType() {
     return type;
+  }
+
+  public static Account create(String name, BigDecimal balance, AccountType type) {
+    if (balance.compareTo(BigDecimal.ZERO) < 0) {
+      throw new InvalidBalanceException(balance);
+    }
+
+    if (name == null || name.isBlank()) {
+      throw new IllegalArgumentException("Nome da conta não pode estar vazio.");
+    }
+
+    if (type == null) {
+      throw new IllegalArgumentException("Tipo da Conta inválido.");
+    }
+
+    return new Account(name, balance, type);
   }
 
   public void deposit(BigDecimal amount) {
