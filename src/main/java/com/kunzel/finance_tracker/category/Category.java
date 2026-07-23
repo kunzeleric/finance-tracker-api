@@ -30,7 +30,7 @@ public class Category {
   private CategoryType type;
 
   @Column(nullable = false)
-  private boolean isDefault;
+  private Boolean isDefault;
 
   @Column(nullable = false)
   private LocalDate creationDate;
@@ -38,11 +38,7 @@ public class Category {
   protected Category() {
   }
 
-  public Category(String name, CategoryType type) {
-    this(name, type, false);
-  }
-
-  public Category(String name, CategoryType type, boolean isDefault) {
+  private Category(String name, CategoryType type, Boolean isDefault) {
     if (name == null || name.isBlank()) {
       throw new IllegalArgumentException("Nome da categoria nao pode estar vazio");
     }
@@ -54,6 +50,7 @@ public class Category {
     this.name = name;
     this.type = type;
     this.isDefault = isDefault;
+    this.creationDate = LocalDate.now();
   }
 
   public Long getId() {
@@ -68,7 +65,7 @@ public class Category {
     return type;
   }
 
-  public boolean isDefault() {
+  public Boolean isDefault() {
     return isDefault;
   }
 
@@ -98,5 +95,13 @@ public class Category {
     }
 
     this.type = type;
+  }
+
+  public static Category createDefault(String name, CategoryType type) {
+    return new Category(name, type, true);
+  }
+
+  public static Category createCustom(String name, CategoryType type) {
+    return new Category(name, type, false);
   }
 }

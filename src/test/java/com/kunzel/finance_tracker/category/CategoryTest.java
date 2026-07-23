@@ -11,7 +11,7 @@ public class CategoryTest {
 
   @BeforeEach
   void setup() {
-    category = new Category("Alimentação", CategoryType.EXPENSE, true);
+    category = Category.createDefault("Alimentação", CategoryType.EXPENSE);
   }
 
   @Nested
@@ -26,28 +26,31 @@ public class CategoryTest {
 
     @Test
     void shouldCreateCustomCategory() {
-      Category customCategory = new Category("Natação", CategoryType.EXPENSE);
+      Category customCategory = Category.createCustom("Natação", CategoryType.EXPENSE);
       assertThat(customCategory.isDefault()).isFalse();
     }
 
     @Test
     void shouldThrowExceptionWhenCustomCategoryNameIsEmpty() {
-      assertThatThrownBy(() -> new Category("", CategoryType.EXPENSE)).isInstanceOf(IllegalArgumentException.class);
+      assertThatThrownBy(() -> Category.createCustom("", CategoryType.EXPENSE))
+          .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenCustomCategoryTypeIsEmpty() {
-      assertThatThrownBy(() -> new Category("Natação", null)).isInstanceOf(IllegalArgumentException.class);
+      assertThatThrownBy(() -> Category.createCustom("Natação", null)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenCustomCategoryNameIsBlank() {
-      assertThatThrownBy(() -> new Category("  ", CategoryType.INCOME)).isInstanceOf(IllegalArgumentException.class);
+      assertThatThrownBy(() -> Category.createCustom("  ", CategoryType.INCOME))
+          .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenCustomCategoryNameIsNull() {
-      assertThatThrownBy(() -> new Category(null, CategoryType.INCOME)).isInstanceOf(IllegalArgumentException.class);
+      assertThatThrownBy(() -> Category.createCustom(null, CategoryType.INCOME))
+          .isInstanceOf(IllegalArgumentException.class);
     }
   }
 
@@ -56,7 +59,7 @@ public class CategoryTest {
 
     @Test
     void shouldRenameCustomCategory() {
-      Category customCategory = new Category("Freelance", CategoryType.INCOME);
+      Category customCategory = Category.createCustom("Freelance", CategoryType.INCOME);
       String newName = "Projetos";
 
       customCategory.rename(newName);
@@ -71,13 +74,13 @@ public class CategoryTest {
 
     @Test
     void shouldThrowExceptionWhenRenamingCustomCategoryWithNullName() {
-      Category customCategory = new Category("Freelance", CategoryType.INCOME);
+      Category customCategory = Category.createCustom("Freelance", CategoryType.INCOME);
       assertThatThrownBy(() -> customCategory.rename(null)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenRenamingCustomCategoryWithEmptyName() {
-      Category customCategory = new Category("Freelance", CategoryType.INCOME);
+      Category customCategory = Category.createCustom("Freelance", CategoryType.INCOME);
       assertThatThrownBy(() -> customCategory.rename("")).isInstanceOf(IllegalArgumentException.class);
     }
   }
@@ -87,7 +90,7 @@ public class CategoryTest {
 
     @Test
     void shouldChangeCustomCategoryType() {
-      Category customCategory = new Category("Natação", CategoryType.INCOME);
+      Category customCategory = Category.createCustom("Natação", CategoryType.INCOME);
       customCategory.changeType(CategoryType.EXPENSE);
       assertThat(customCategory.getType()).isEqualTo(CategoryType.EXPENSE);
     }
@@ -99,7 +102,7 @@ public class CategoryTest {
 
     @Test
     void shouldThrowExceptionWhenChangingCustomCategoryTypeToNull() {
-      Category customCategory = new Category("Natação", CategoryType.INCOME);
+      Category customCategory = Category.createCustom("Natação", CategoryType.INCOME);
       assertThatThrownBy(() -> customCategory.changeType(null)).isInstanceOf(IllegalArgumentException.class);
     }
   }
