@@ -26,7 +26,7 @@ public class Account {
   private Long id;
 
   @Column(nullable = false)
-  @NotBlank(message = "Nome da conta não pode estar vazio")
+  @NotBlank(message = "Nome da conta não pode estar em branco")
   private String name;
 
   @Column(nullable = false)
@@ -38,7 +38,7 @@ public class Account {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  @NotNull(message = "Tipo de conta não pode estar vazio")
+  @NotNull(message = "Tipo de conta não pode estar em branco")
   private AccountType type;
 
   protected Account() {
@@ -86,7 +86,7 @@ public class Account {
     }
 
     if (name == null || name.isBlank()) {
-      throw new IllegalArgumentException("Nome da conta não pode estar vazio.");
+      throw new IllegalArgumentException("Nome da conta não pode estar em branco.");
     }
 
     if (type == null) {
@@ -99,7 +99,7 @@ public class Account {
   public void updateDetails(String name, AccountType type) {
     if (name != null) {
       if (name.isBlank()) {
-        throw new IllegalArgumentException("Nome da conta não pode estar vazio");
+        throw new IllegalArgumentException("Nome da conta não pode estar em branco");
       }
       this.name = name;
     }
