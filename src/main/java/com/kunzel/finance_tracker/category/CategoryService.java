@@ -1,6 +1,7 @@
 package com.kunzel.finance_tracker.category;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -23,14 +24,32 @@ public class CategoryService {
   }
 
   public Category createCategory(String name, CategoryType type) {
+    Optional<Category> existingCategory = categoryRepository.findExistingCategoryByNameAndType(name, type);
+
+    if (existingCategory.isPresent()) {
+      throw new IllegalArgumentException("Você não pode ter duas categorias com mesmo nome e tipo.");
+    }
+
     return categoryRepository.save(Category.createCustom(name, type));
   }
 
   public Category createDefaultCategory(String name, CategoryType type) {
+    Optional<Category> existingCategory = categoryRepository.findExistingCategoryByNameAndType(name, type);
+
+    if (existingCategory.isPresent()) {
+      throw new IllegalArgumentException("Você não pode ter duas categorias com mesmo nome e tipo.");
+    }
+
     return categoryRepository.save(Category.createDefault(name, type));
   }
 
   public Category updateCategory(Long categoryId, String name, CategoryType type) {
+    Optional<Category> existingCategory = categoryRepository.findExistingCategoryByNameAndType(name, type);
+
+    if (existingCategory.isPresent()) {
+      throw new IllegalArgumentException("Você não pode ter duas categorias com mesmo nome e tipo.");
+    }
+
     Category categoryToUpdate = categoryRepository.getReferenceById(categoryId);
     categoryToUpdate.updateDetails(name, type);
     return categoryToUpdate;
