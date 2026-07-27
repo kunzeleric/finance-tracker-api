@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.kunzel.finance_tracker.account.Account;
 import com.kunzel.finance_tracker.category.Category;
 
@@ -15,28 +14,26 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Positive;
 
 @Entity
 @Table(name = "transactions")
 public class Transaction {
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "category_seq")
-  @SequenceGenerator(name = "category_seq", sequenceName = "category_sequence", allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "transaction_seq")
+  @SequenceGenerator(name = "transaction_seq", sequenceName = "transaction_sequence", allocationSize = 1)
   private Long id;
 
   @Column(nullable = false)
   @NotNull(message = "Valor da transação não pode estar em branco.")
-  @PositiveOrZero(message = "Valor da transação tem que ser positivo e maior que 0 (zero)")
+  @Positive(message = "Valor da transação tem que ser positivo e maior que 0 (zero)")
   BigDecimal amount;
 
   @Column(nullable = false)
-  @NotBlank(message = "Data da transação não pode estar em branco")
+  @NotNull(message = "Data da transação não pode estar em branco")
   LocalDate date;
 
   @Column(nullable = false)
