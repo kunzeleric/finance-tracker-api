@@ -23,14 +23,14 @@ Progresso de implementação dos requisitos da V1. Marque cada item conforme con
 
 ### RF03 — Cadastrar transação
 
-- [ ] Transação tem valor (positivo), data, categoria e conta associados
-- [ ] Tipo (receita/despesa) derivado da categoria associada
+- [x] Transação tem valor (positivo), data, categoria e conta associados
+- [x] Tipo (receita/despesa) derivado da categoria associada
 - [ ] Ao criar transação, atualizar saldo da conta conforme tipo da categoria (receita soma, despesa subtrai)
 
 ### RF04 — Listar transações
 
-- [ ] Filtrar por conta
-- [ ] Filtrar por categoria
+- [x] Filtrar por conta
+- [x] Filtrar por categoria
 - [ ] Filtrar por período (data inicial/final)
 
 ### RF05 — Editar e excluir transação
