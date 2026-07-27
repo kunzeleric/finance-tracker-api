@@ -1,5 +1,6 @@
 package com.kunzel.finance_tracker.transaction;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -49,6 +50,21 @@ public class TransactionTest {
       assertThatThrownBy(() -> Transaction.create("Transação teste", new BigDecimal(10.00), null, account, category))
           .isInstanceOf(IllegalArgumentException.class);
     }
+  }
 
+  @Nested
+  class UpdateTransaction {
+    @Test
+    void shouldUpdateTransactionDescription() {
+      Transaction transaction = Transaction.create("Transação teste", new BigDecimal(100.00), LocalDate.now(), account,
+          category);
+
+      String transactionNewName = "Transação teste 2";
+
+      transaction.updateDetails(transactionNewName, transaction.getAmount(), transaction.getDate(),
+          transaction.getAccount(), transaction.getCategory());
+
+      assertThat(transaction.getDescription()).isEqualTo(transactionNewName);
+    }
   }
 }
