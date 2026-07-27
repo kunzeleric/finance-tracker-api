@@ -1,6 +1,7 @@
 package com.kunzel.finance_tracker.shared.exceptions;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -8,7 +9,6 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -28,8 +28,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
       MethodArgumentNotValidException ex, HttpHeaders headers,
       HttpStatusCode status, WebRequest request) {
 
-    List<String> errors = ex.getBindingResult().getFieldErrors().stream()
-        .map(FieldError::getDefaultMessage)
+    List<Map<String, String>> errors = ex.getBindingResult().getFieldErrors().stream()
+        .map(fieldError -> Map.of(
+            "campo", fieldError.getField(),
+            "mensagem", fieldError.getDefaultMessage() != null
+                ? fieldError.getDefaultMessage()
+                : "Valor inválido."))
         .toList();
 
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -54,10 +58,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
           ? rootCause.getMessage()
           : "Valor inválido no corpo da requisição.";
 
+      String field = jme.getPath().stream()
+          .map(DatabindException.Reference::getPropertyName)
+          .filter(name -> name != null)
+          .reduce((first, second) -> second)
+          .orElse("desconhecido");
+
       ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
           HttpStatus.BAD_REQUEST, "Um ou mais campos estão inválidos.");
       problemDetail.setTitle("Requisição Inválida");
-      problemDetail.setProperty("errors", List.of(message));
+      problemDetail.setProperty("errors", List.of(Map.of("campo", field, "mensagem", message)));
 
       return ResponseEntity.badRequest().body(problemDetail);
     }
