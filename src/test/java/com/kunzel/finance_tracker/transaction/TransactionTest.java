@@ -29,7 +29,8 @@ public class TransactionTest {
   class Constructor {
     @Test
     void shouldCreateTransaction() {
-      Transaction transaction = Transaction.create(new BigDecimal(100.00), LocalDate.now(), account, category);
+      Transaction transaction = Transaction.create("Transação teste", new BigDecimal(100.00), LocalDate.now(), account,
+          category);
 
       assertEquals(BigDecimal.valueOf(100), transaction.getAmount());
       assertEquals(account, transaction.getAccount());
@@ -38,13 +39,14 @@ public class TransactionTest {
 
     @Test
     void shouldThrowExceptionWhenTransactionValueIsZero() {
-      assertThatThrownBy(() -> Transaction.create(new BigDecimal(0.00), LocalDate.now(), account, category))
+      assertThatThrownBy(
+          () -> Transaction.create("Transação teste", new BigDecimal(0.00), LocalDate.now(), account, category))
           .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenTransactionDateIsEmpty() {
-      assertThatThrownBy(() -> Transaction.create(new BigDecimal(10.00), null, account, category))
+      assertThatThrownBy(() -> Transaction.create("Transação teste", new BigDecimal(10.00), null, account, category))
           .isInstanceOf(IllegalArgumentException.class);
     }
 

@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.kunzel.finance_tracker.account.Account;
 import com.kunzel.finance_tracker.category.Category;
+import com.kunzel.finance_tracker.category.CategoryType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,6 +26,9 @@ public class Transaction {
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "transaction_seq")
   @SequenceGenerator(name = "transaction_seq", sequenceName = "transaction_sequence", allocationSize = 1)
   private Long id;
+
+  @Column(nullable = false)
+  String description;
 
   @Column(nullable = false)
   BigDecimal amount;
@@ -48,20 +52,9 @@ public class Transaction {
   protected Transaction() {
   }
 
-  private Transaction(BigDecimal amount, LocalDate date, Account account, Category category) {
-    if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("Valor da transação tem que ser positivo e maior que 0 (zero)");
-    }
-    if (date == null) {
-      throw new IllegalArgumentException("Data da transação não pode estar em branco");
-    }
-    if (account == null) {
-      throw new IllegalArgumentException("Conta da transação não pode estar em branco");
-    }
-    if (category == null) {
-      throw new IllegalArgumentException("Categoria da transação não pode estar em branco");
-    }
-
+  private Transaction(String description, BigDecimal amount, LocalDate date, Account account, Category category) {
+    validate(description, amount, date, account, category);
+    this.description = description;
     this.amount = amount;
     this.date = date;
     this.creationDate = LocalDate.now();
@@ -93,7 +86,43 @@ public class Transaction {
     return category;
   }
 
-  public static Transaction create(BigDecimal amount, LocalDate date, Account account, Category category) {
-    return new Transaction(amount, date, account, category);
+  private static void validate(String description, BigDecimal amount, LocalDate date, Account account,
+      Category category) {
+    if (description == null || description.isBlank()) {
+      throw new IllegalArgumentException("Descrição da transação não pode estar em branco");
+    }
+
+    if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalArgumentException("Valor da transação tem que ser positivo e maior que 0 (zero)");
+    }
+    if (date == null) {
+      throw new IllegalArgumentException("Data da transação não pode estar em branco");
+    }
+    if (account == null) {
+      throw new IllegalArgumentException("Conta da transação não pode estar em branco");
+    }
+    if (category == null) {
+      throw new IllegalArgumentException("Categoria da transação não pode estar em branco");
+    }
+  }
+
+  public static Transaction create(String description, BigDecimal amount, LocalDate date, Account account,
+      Category category) {
+    return new Transaction(description, amount, date, account, category);
+  }
+
+  public void updateDetails(String description, BigDecimal amount, LocalDate date, Account account, Category category) {
+    validate(description, amount, date, account, category);
+    this.description = description;
+    this.amount = amount;
+    this.date = date;
+    this.account = account;
+    this.category = category;
+  }
+
+  public BigDecimal getSignedAmount() {
+    return this.category.getType() == CategoryType.EXPENSE
+        ? this.amount.negate()
+        : this.amount;
   }
 }
