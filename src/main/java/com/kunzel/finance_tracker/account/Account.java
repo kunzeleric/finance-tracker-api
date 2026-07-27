@@ -19,9 +19,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
 
 @Entity
 @Table(name = "accounts")
@@ -32,11 +29,9 @@ public class Account {
   private Long id;
 
   @Column(nullable = false)
-  @NotBlank(message = "Nome da conta não pode estar em branco")
   private String name;
 
   @Column(nullable = false)
-  @PositiveOrZero(message = "Saldo inicial não pode ser negativo")
   private BigDecimal balance;
 
   @Column(nullable = false)
@@ -44,7 +39,6 @@ public class Account {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  @NotNull(message = "Tipo de conta não pode estar em branco")
   private AccountType type;
 
   @OneToMany(mappedBy = "account")

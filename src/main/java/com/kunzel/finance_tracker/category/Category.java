@@ -16,8 +16,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "categories")
@@ -28,12 +26,10 @@ public class Category {
   private Long id;
 
   @Column(nullable = false)
-  @NotBlank(message = "Nome da categoria não pode estar em branco")
   private String name;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  @NotNull(message = "Tipo da categoria não pode estar em branco")
   private CategoryType type;
 
   @Column(nullable = false)
