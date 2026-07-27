@@ -37,7 +37,7 @@ public class AccountService {
     Account found = getAccountById(accountId);
     accountRepository.delete(found);
 
-    // TODO: cascade delete de transações ligadas à conta
+    // TODO: cascade delete de TRANSACTIONS ligadas à conta removida (account_id)
   }
 
 }

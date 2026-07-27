@@ -58,5 +58,7 @@ public class CategoryService {
   public void removeCategory(Long categoryId) {
     Category categoryToRemove = getCategoryById(categoryId);
     categoryRepository.delete(categoryToRemove);
+    // TODO: fazer um cascade delete em TRANSACTIONS com mesmo category_id quando
+    // uma categoria for removida
   }
 }
