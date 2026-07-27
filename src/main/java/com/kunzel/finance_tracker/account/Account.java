@@ -2,9 +2,12 @@ package com.kunzel.finance_tracker.account;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.kunzel.finance_tracker.account.exceptions.InsufficientBalanceException;
 import com.kunzel.finance_tracker.account.exceptions.InvalidBalanceException;
+import com.kunzel.finance_tracker.transaction.Transaction;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,12 +16,15 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
 @Entity
+@Table(name = "accounts")
 public class Account {
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "account_seq")
@@ -40,6 +46,10 @@ public class Account {
   @Column(nullable = false)
   @NotNull(message = "Tipo de conta não pode estar em branco")
   private AccountType type;
+
+  @OneToMany(mappedBy = "account")
+  @JsonManagedReference
+  private List<Transaction> transactions;
 
   protected Account() {
   }

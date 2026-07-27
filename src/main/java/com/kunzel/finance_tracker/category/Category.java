@@ -1,6 +1,10 @@
 package com.kunzel.finance_tracker.category;
 
 import java.time.LocalDate;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.kunzel.finance_tracker.transaction.Transaction;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,11 +13,14 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
+@Table(name = "categories")
 public class Category {
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "category_seq")
@@ -34,6 +41,10 @@ public class Category {
 
   @Column(nullable = false)
   private LocalDate creationDate;
+
+  @OneToMany(mappedBy = "category")
+  @JsonManagedReference
+  private List<Transaction> transactions;
 
   protected Category() {
   }
