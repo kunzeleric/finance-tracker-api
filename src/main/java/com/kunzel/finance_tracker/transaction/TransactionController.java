@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kunzel.finance_tracker.category.dtos.CategoryResponse;
@@ -31,22 +32,24 @@ public class TransactionController {
   }
 
   @GetMapping
-  public ResponseEntity<List<TransactionResponse>> fetchTransactions() {
-    List<TransactionResponse> transactions = transactionService.getAllTransactions().stream()
-        .map(TransactionResponse::new).toList();
+  public ResponseEntity<List<TransactionResponse>> fetchTransactions(
+      @RequestParam(required = false) Long accountId,
+      @RequestParam(required = false) Long categoryId) {
+    List<TransactionResponse> transactions = transactionService.searchTransactions(accountId, categoryId).stream()
+        .map(TransactionResponse::from).toList();
     return ResponseEntity.ok().body(transactions);
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<TransactionResponse> getTransactionById(@PathVariable("id") Long transactionId) {
-    return ResponseEntity.ok().body(new TransactionResponse(transactionService.getTransactionById(transactionId)));
+    return ResponseEntity.ok().body(TransactionResponse.from(transactionService.getTransactionById(transactionId)));
   }
 
   @PostMapping
   public ResponseEntity<TransactionResponse> createTransaction(@Valid @RequestBody CreateTransactionRequest request) {
     Transaction createdTransaction = transactionService.createTransaction(request.description(), request.amount(),
         request.date(), request.accountId(), request.categoryId());
-    return ResponseEntity.status(HttpStatus.CREATED).body(new TransactionResponse(createdTransaction));
+    return ResponseEntity.status(HttpStatus.CREATED).body(TransactionResponse.from(createdTransaction));
   }
 
   @PutMapping("/{id}")
@@ -54,7 +57,7 @@ public class TransactionController {
       @Valid @RequestBody UpdateTransactionRequest request) {
     Transaction updatedTransaction = transactionService.updateTransaction(transactionId, request.description(),
         request.amount(), request.date(), request.accountId(), request.categoryId());
-    return ResponseEntity.ok().body(new TransactionResponse(updatedTransaction));
+    return ResponseEntity.ok().body(TransactionResponse.from(updatedTransaction));
   }
 
   @DeleteMapping("/{id}")

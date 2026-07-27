@@ -27,7 +27,19 @@ public class TransactionService {
     this.accountRepository = accountRepository;
   }
 
-  public List<Transaction> getAllTransactions() {
+  public List<Transaction> searchTransactions(Long accountId, Long categoryId) {
+    if (accountId != null && categoryId != null) {
+      return transactionRepository.findByAccountIdAndCategoryId(accountId, categoryId);
+    }
+
+    if (accountId != null) {
+      return transactionRepository.findByAccountId(accountId);
+    }
+
+    if (categoryId != null) {
+      return transactionRepository.findByCategoryId(categoryId);
+    }
+
     return transactionRepository.findAll();
   }
 
