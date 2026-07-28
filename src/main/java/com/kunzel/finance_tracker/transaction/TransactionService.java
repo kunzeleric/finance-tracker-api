@@ -54,18 +54,27 @@ public class TransactionService {
     Account account = findAccountById(accountId);
     Category category = findCategoryById(categoryId);
 
-    return transactionRepository.save(Transaction.create(description, amount, date, account, category));
+    Transaction createdTransaction = transactionRepository
+        .save(Transaction.create(description, amount, date, account, category));
+    applyAccountEffect(account, category, amount);
+
+    return createdTransaction;
   }
 
   @Transactional
   public Transaction updateTransaction(Long transactionId, String description, BigDecimal amount, LocalDate date,
-      Long accountId,
-      Long categoryId) {
-    Account account = findAccountById(accountId);
-    Category category = findCategoryById(categoryId);
+      Long accountId, Long categoryId) {
 
     Transaction transactionToUpdate = getTransactionById(transactionId);
-    transactionToUpdate.updateDetails(description, amount, date, account, category);
+    reverseAccountEffect(transactionToUpdate.getAccount(), transactionToUpdate.getCategory(),
+        transactionToUpdate.getAmount());
+
+    Account newAccount = findAccountById(accountId);
+    Category newCategory = findCategoryById(categoryId);
+    applyAccountEffect(newAccount, newCategory, amount);
+
+    transactionToUpdate.updateDetails(description, amount, date, newAccount, newCategory);
+
     return transactionToUpdate;
   }
 
@@ -84,4 +93,19 @@ public class TransactionService {
         .orElseThrow(() -> new NotFoundException(categoryId, "CATEGORIA"));
   }
 
+  private void applyAccountEffect(Account account, Category category, BigDecimal amount) {
+    if (category.isExpense()) {
+      account.withdraw(amount);
+    } else {
+      account.deposit(amount);
+    }
+  }
+
+  private void reverseAccountEffect(Account account, Category category, BigDecimal amount) {
+    if (category.isExpense()) {
+      account.deposit(amount);
+    } else {
+      account.withdraw(amount);
+    }
+  }
 }

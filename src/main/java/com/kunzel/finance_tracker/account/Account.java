@@ -32,7 +32,10 @@ public class Account {
   private String name;
 
   @Column(nullable = false)
-  private BigDecimal balance;
+  private BigDecimal initialBalance;
+
+  @Column(nullable = false)
+  private BigDecimal currentBalance;
 
   @Column(nullable = false)
   private LocalDate creationDate;
@@ -48,9 +51,10 @@ public class Account {
   protected Account() {
   }
 
-  private Account(String name, BigDecimal balance, AccountType type) {
+  private Account(String name, BigDecimal initialBalance, AccountType type) {
     this.name = name;
-    this.balance = balance;
+    this.initialBalance = initialBalance;
+    this.currentBalance = initialBalance;
     this.type = type;
     this.creationDate = LocalDate.now();
   }
@@ -63,8 +67,12 @@ public class Account {
     return name;
   }
 
-  public BigDecimal getBalance() {
-    return balance;
+  public BigDecimal getInitialBalance() {
+    return initialBalance;
+  }
+
+  public BigDecimal getCurrentBalance() {
+    return currentBalance;
   }
 
   public LocalDate getCreationDate() {
@@ -84,9 +92,9 @@ public class Account {
     this.type = newType;
   }
 
-  public static Account create(String name, BigDecimal balance, AccountType type) {
-    if (balance.compareTo(BigDecimal.ZERO) < 0) {
-      throw new InvalidBalanceException(balance);
+  public static Account create(String name, BigDecimal initialBalance, AccountType type) {
+    if (initialBalance.compareTo(BigDecimal.ZERO) < 0) {
+      throw new InvalidBalanceException(initialBalance);
     }
 
     if (name == null || name.isBlank()) {
@@ -97,7 +105,7 @@ public class Account {
       throw new IllegalArgumentException("Tipo da conta inválido.");
     }
 
-    return new Account(name, balance, type);
+    return new Account(name, initialBalance, type);
   }
 
   public void updateDetails(String name, AccountType type) {
@@ -115,17 +123,17 @@ public class Account {
 
   public void deposit(BigDecimal amount) {
     validatePositiveAmount(amount, "Valor tem que ser positivo para ser depositado.");
-    this.balance = this.balance.add(amount);
+    this.currentBalance = this.currentBalance.add(amount);
   }
 
   public void withdraw(BigDecimal amount) {
     validatePositiveAmount(amount, "Valor tem que ser positivo para ser sacado.");
 
-    if (this.balance.compareTo(amount) < 0) {
+    if (this.currentBalance.compareTo(amount) < 0) {
       throw new InsufficientBalanceException(amount);
     }
 
-    this.balance = this.balance.subtract(amount);
+    this.currentBalance = this.currentBalance.subtract(amount);
   }
 
   private static void validatePositiveAmount(BigDecimal amount, String message) {

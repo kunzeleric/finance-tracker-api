@@ -42,7 +42,7 @@ public class AccountController {
 
   @PostMapping
   public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request) {
-    Account createdAccount = accountService.createAccount(request.name(), request.balance(), request.type());
+    Account createdAccount = accountService.createAccount(request.name(), request.initialBalance(), request.type());
     return ResponseEntity.status(HttpStatus.CREATED).body(new AccountResponse(createdAccount));
   }
 

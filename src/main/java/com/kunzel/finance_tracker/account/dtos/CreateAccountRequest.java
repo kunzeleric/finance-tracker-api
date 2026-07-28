@@ -11,5 +11,5 @@ import jakarta.validation.constraints.PositiveOrZero;
 public record CreateAccountRequest(
     @NotBlank(message = "não pode estar em branco") String name,
     @NotNull(message = "não pode estar em branco") AccountType type,
-    @PositiveOrZero(message = "não pode ser negativo") BigDecimal balance) {
+    @PositiveOrZero(message = "não pode ser negativo") BigDecimal initialBalance) {
 }

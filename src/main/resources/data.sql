@@ -2,9 +2,10 @@
 -- Requires: spring.jpa.defer-datasource-initialization=true (so this runs AFTER Hibernate builds the schema).
 --
 -- NOTE: these are raw INSERTs — they bypass the domain (deposit/withdraw never run).
--- So each account's `balance` is set MANUALLY to equal the sum of its signed transactions:
---   INCOME categories add, EXPENSE categories subtract. Accounts start at 0.
--- Keep this invariant when editing: balance == SUM(signed transaction amounts) per account.
+-- So each account's balances are set MANUALLY:
+--   initial_balance = opening balance before tracking (0 here — accounts start empty).
+--   current_balance = initial_balance + SUM(signed transactions): INCOME adds, EXPENSE subtracts.
+-- Keep this invariant when editing: current_balance == initial_balance + SUM(signed txns) per account.
 
 -- Categories -------------------------------------------------------------
 INSERT INTO categories (id, name, type, is_default, creation_date) VALUES
@@ -15,16 +16,16 @@ INSERT INTO categories (id, name, type, is_default, creation_date) VALUES
   (5, 'Transporte',     'EXPENSE', TRUE, DATE '2026-01-01'),
   (6, 'Lazer',          'EXPENSE', TRUE, DATE '2026-01-01');
 
--- Accounts (balance == net of transactions below) ------------------------
---   1: 4500 + 1200 - 350.75 - 1500 = 3849.25
---   2: 10000                        = 10000.00
---   3: 500 - 200 - 60               = 240.00
---   4: 800                          = 800.00
-INSERT INTO accounts (id, name, balance, creation_date, type) VALUES
-  (1, 'Conta Corrente', 3849.25, DATE '2026-01-15', 'CHECKING'),
-  (2, 'Poupança',      10000.00, DATE '2026-01-15', 'SAVINGS'),
-  (3, 'Carteira',        240.00, DATE '2026-02-01', 'WALLET'),
-  (4, 'Investimentos',   800.00, DATE '2026-03-10', 'INVESTMENT');
+-- Accounts (current_balance == initial_balance + net of transactions below) --
+--   1: 0 + 4500 + 1200 - 350.75 - 1500 = 3849.25
+--   2: 0 + 10000                        = 10000.00
+--   3: 0 + 500 - 200 - 60               = 240.00
+--   4: 0 + 800                          = 800.00
+INSERT INTO accounts (id, name, initial_balance, current_balance, creation_date, type) VALUES
+  (1, 'Conta Corrente', 0.00,  3849.25, DATE '2026-01-15', 'CHECKING'),
+  (2, 'Poupança',       0.00, 10000.00, DATE '2026-01-15', 'SAVINGS'),
+  (3, 'Carteira',       0.00,   240.00, DATE '2026-02-01', 'WALLET'),
+  (4, 'Investimentos',  0.00,   800.00, DATE '2026-03-10', 'INVESTMENT');
 
 -- Transactions -----------------------------------------------------------
 INSERT INTO transactions (id, description, amount, date, creation_date, account_id, category_id) VALUES

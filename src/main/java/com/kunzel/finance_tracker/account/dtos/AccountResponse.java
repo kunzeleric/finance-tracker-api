@@ -5,8 +5,10 @@ import java.math.BigDecimal;
 import com.kunzel.finance_tracker.account.Account;
 import com.kunzel.finance_tracker.account.AccountType;
 
-public record AccountResponse(Long accountId, String name, AccountType type, BigDecimal balance) {
+public record AccountResponse(Long accountId, String name, AccountType type, BigDecimal initialBalance,
+    BigDecimal currentBalance) {
   public AccountResponse(Account account) {
-    this(account.getId(), account.getName(), account.getType(), account.getBalance());
+    this(account.getId(), account.getName(), account.getType(), account.getInitialBalance(),
+        account.getCurrentBalance());
   }
 }

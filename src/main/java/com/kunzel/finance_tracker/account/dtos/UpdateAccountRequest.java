@@ -1,16 +1,12 @@
 
 package com.kunzel.finance_tracker.account.dtos;
 
-import java.math.BigDecimal;
-
 import com.kunzel.finance_tracker.account.AccountType;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.PositiveOrZero;
 
 public record UpdateAccountRequest(
         @Pattern(regexp = ".*\\S.*", message = "não pode estar em branco") String name,
-        @NotNull(message = "não pode estar em branco") AccountType type,
-        @PositiveOrZero(message = "não pode ser negativo") BigDecimal balance) {
+        @NotNull(message = "não pode estar em branco") AccountType type) {
 }

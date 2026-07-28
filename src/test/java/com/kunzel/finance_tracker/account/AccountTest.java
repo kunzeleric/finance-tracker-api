@@ -25,7 +25,8 @@ class AccountTest {
     @Test
     void shouldCreateAccountWithValidInitialBalance() {
       assertThat(account.getName()).isEqualTo("Nubank Conta Corrente");
-      assertThat(account.getBalance()).isEqualByComparingTo(new BigDecimal(1000.00));
+      assertThat(account.getInitialBalance()).isEqualByComparingTo(new BigDecimal(1000.00));
+      assertThat(account.getCurrentBalance()).isEqualByComparingTo(new BigDecimal(1000.00));
       assertThat(account.getType()).isEqualTo(AccountType.CHECKING);
       assertThat(account.getCreationDate()).isEqualTo(LocalDate.now());
     }
@@ -54,12 +55,12 @@ class AccountTest {
 
     @Test
     void shouldIncreaseBalanceWhenDepositingValidAmount() {
-      BigDecimal initialBalance = account.getBalance();
+      BigDecimal initialBalance = account.getCurrentBalance();
       BigDecimal depositedAmount = new BigDecimal(10.00);
       BigDecimal finalAmount = initialBalance.add(depositedAmount);
 
       account.deposit(depositedAmount);
-      assertThat(account.getBalance()).isEqualByComparingTo(finalAmount);
+      assertThat(account.getCurrentBalance()).isEqualByComparingTo(finalAmount);
     }
 
     @Test
@@ -78,12 +79,12 @@ class AccountTest {
 
     @Test
     void shouldDecreaseBalanceWhenWithdrawingValidAmount() {
-      BigDecimal initialBalance = account.getBalance();
+      BigDecimal initialBalance = account.getCurrentBalance();
       BigDecimal withdrawnAmount = new BigDecimal(10.00);
       BigDecimal finalAmount = initialBalance.subtract(withdrawnAmount);
 
       account.withdraw(withdrawnAmount);
-      assertThat(account.getBalance()).isEqualByComparingTo(finalAmount);
+      assertThat(account.getCurrentBalance()).isEqualByComparingTo(finalAmount);
     }
 
     @Test

@@ -23,8 +23,8 @@ public class AccountService {
     return accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException(accountId, "CONTA"));
   }
 
-  public Account createAccount(String name, BigDecimal balance, AccountType type) {
-    return accountRepository.save(Account.create(name, balance, type));
+  public Account createAccount(String name, BigDecimal initialBalance, AccountType type) {
+    return accountRepository.save(Account.create(name, initialBalance, type));
   }
 
   public Account updateAccount(Long accountId, String name, AccountType type) {
