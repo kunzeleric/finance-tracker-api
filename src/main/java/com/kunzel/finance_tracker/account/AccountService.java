@@ -30,7 +30,7 @@ public class AccountService {
   public Account updateAccount(Long accountId, String name, AccountType type) {
     Account accountToUpdate = getAccountById(accountId);
     accountToUpdate.updateDetails(name, type);
-    return accountToUpdate;
+    return accountRepository.save(accountToUpdate);
   }
 
   public void removeAccount(Long accountId) {

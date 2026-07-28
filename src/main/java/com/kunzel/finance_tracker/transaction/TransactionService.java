@@ -65,10 +65,12 @@ public class TransactionService {
 
     oldAccount.reverseTransaction(oldCategory, oldAmount);
     newAccount.applyTransaction(newCategory, amount);
+    accountRepository.save(oldAccount);
+    accountRepository.save(newAccount);
 
     transactionToUpdate.updateDetails(description, amount, date, newAccount, newCategory);
 
-    return transactionToUpdate;
+    return transactionRepository.save(transactionToUpdate);
   }
 
   @Transactional

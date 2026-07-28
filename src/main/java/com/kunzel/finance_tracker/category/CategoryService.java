@@ -6,8 +6,6 @@ import org.springframework.stereotype.Service;
 
 import com.kunzel.finance_tracker.shared.exceptions.NotFoundException;
 
-import jakarta.transaction.Transactional;
-
 @Service
 public class CategoryService {
   private final CategoryRepository categoryRepository;
@@ -34,13 +32,12 @@ public class CategoryService {
     return categoryRepository.save(Category.createDefault(name, type));
   }
 
-  @Transactional
   public Category updateCategory(Long categoryId, String name, CategoryType type) {
     Category categoryToUpdate = getCategoryById(categoryId);
     assertNameTypeAvailable(name, type, categoryId);
 
     categoryToUpdate.updateDetails(name, type);
-    return categoryToUpdate;
+    return categoryRepository.save(categoryToUpdate);
   }
 
   public void removeCategory(Long categoryId) {
