@@ -1,5 +1,6 @@
 package com.kunzel.finance_tracker.account;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,11 @@ public class AccountController {
   public ResponseEntity<AccountResponse> getAccount(@PathVariable("id") Long accountId) {
     Account accountToBeFound = accountService.getAccountById(accountId);
     return ResponseEntity.ok().body(new AccountResponse(accountToBeFound));
+  }
+
+  @GetMapping("/balance/total")
+  public ResponseEntity<BigDecimal> getTotalBalance() {
+    return ResponseEntity.ok().body(accountService.getTotalBalance());
   }
 
   @PostMapping

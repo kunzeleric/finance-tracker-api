@@ -31,16 +31,16 @@ Progresso de implementação dos requisitos da V1. Marque cada item conforme con
 
 - [x] Filtrar por conta
 - [x] Filtrar por categoria
-- [ ] Filtrar por período (data inicial/final)
+- [x] Filtrar por período (data inicial/final)
 
 ### RF05 — Editar e excluir transação
 
-- [ ] Editar transação recalcula corretamente o saldo da conta
-- [ ] Excluir transação recalcula corretamente o saldo da conta
+- [x] Editar transação recalcula corretamente o saldo da conta
+- [x] Excluir transação recalcula corretamente o saldo da conta
 
 ### RF06 — Consultar saldo de uma conta
 
-- [ ] Saldo retornado reflete a soma de todas as transações daquela conta
+- [x] Saldo retornado reflete a soma de todas as transações daquela conta
 
 ## Requisitos não-funcionais / processo
 

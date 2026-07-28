@@ -40,4 +40,9 @@ public class AccountService {
     // TODO: cascade delete de TRANSACTIONS ligadas à conta removida (account_id)
   }
 
+  public BigDecimal getTotalBalance() {
+    return accountRepository.findAll().stream().map(Account::getCurrentBalance).reduce(BigDecimal.ZERO,
+        BigDecimal::add);
+  }
+
 }
