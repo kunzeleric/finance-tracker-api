@@ -24,11 +24,14 @@ public class AccountService {
   }
 
   public Account createAccount(String name, BigDecimal initialBalance, AccountType type) {
+    assertNameTypeAvailable(name, type, null);
     return accountRepository.save(Account.create(name, initialBalance, type));
   }
 
   public Account updateAccount(Long accountId, String name, AccountType type) {
     Account accountToUpdate = getAccountById(accountId);
+    assertNameTypeAvailable(name, type, accountId);
+
     accountToUpdate.updateDetails(name, type);
     return accountRepository.save(accountToUpdate);
   }
@@ -43,6 +46,14 @@ public class AccountService {
   public BigDecimal getTotalBalance() {
     return accountRepository.findAll().stream().map(Account::getCurrentBalance).reduce(BigDecimal.ZERO,
         BigDecimal::add);
+  }
+
+  private void assertNameTypeAvailable(String name, AccountType type, Long excludeId) {
+    accountRepository.findExistingAccountByNameAndType(name, type)
+        .filter(existing -> !existing.getId().equals(excludeId))
+        .ifPresent(existing -> {
+          throw new IllegalArgumentException("Você não pode ter duas contas com mesmo nome e tipo.");
+        });
   }
 
 }
