@@ -36,6 +36,7 @@ public class TransactionService {
         .orElseThrow(() -> new NotFoundException(transactionId, "TRANSAÇÃO"));
   }
 
+  @Transactional
   public Transaction createTransaction(String description, BigDecimal amount, LocalDate date, Long accountId,
       Long categoryId) {
 

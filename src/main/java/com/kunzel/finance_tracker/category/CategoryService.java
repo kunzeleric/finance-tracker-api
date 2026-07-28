@@ -1,11 +1,12 @@
 package com.kunzel.finance_tracker.category;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import com.kunzel.finance_tracker.shared.exceptions.NotFoundException;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class CategoryService {
@@ -24,33 +25,20 @@ public class CategoryService {
   }
 
   public Category createCategory(String name, CategoryType type) {
-    Optional<Category> existingCategory = categoryRepository.findExistingCategoryByNameAndType(name, type);
-
-    if (existingCategory.isPresent()) {
-      throw new IllegalArgumentException("Você não pode ter duas categorias com mesmo nome e tipo.");
-    }
-
+    assertNameTypeAvailable(name, type, null);
     return categoryRepository.save(Category.createCustom(name, type));
   }
 
   public Category createDefaultCategory(String name, CategoryType type) {
-    Optional<Category> existingCategory = categoryRepository.findExistingCategoryByNameAndType(name, type);
-
-    if (existingCategory.isPresent()) {
-      throw new IllegalArgumentException("Você não pode ter duas categorias com mesmo nome e tipo.");
-    }
-
+    assertNameTypeAvailable(name, type, null);
     return categoryRepository.save(Category.createDefault(name, type));
   }
 
+  @Transactional
   public Category updateCategory(Long categoryId, String name, CategoryType type) {
-    Optional<Category> existingCategory = categoryRepository.findExistingCategoryByNameAndType(name, type);
+    Category categoryToUpdate = getCategoryById(categoryId);
+    assertNameTypeAvailable(name, type, categoryId);
 
-    if (existingCategory.isPresent()) {
-      throw new IllegalArgumentException("Você não pode ter duas categorias com mesmo nome e tipo.");
-    }
-
-    Category categoryToUpdate = categoryRepository.getReferenceById(categoryId);
     categoryToUpdate.updateDetails(name, type);
     return categoryToUpdate;
   }
@@ -60,5 +48,13 @@ public class CategoryService {
     categoryRepository.delete(categoryToRemove);
     // TODO: fazer um cascade delete em TRANSACTIONS com mesmo category_id quando
     // uma categoria for removida
+  }
+
+  private void assertNameTypeAvailable(String name, CategoryType type, Long excludeId) {
+    categoryRepository.findExistingCategoryByNameAndType(name, type)
+        .filter(existing -> !existing.getId().equals(excludeId))
+        .ifPresent(existing -> {
+          throw new IllegalArgumentException("Você não pode ter duas categorias com mesmo nome e tipo.");
+        });
   }
 }
