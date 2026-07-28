@@ -116,4 +116,8 @@ public class Category {
   public static Category createCustom(String name, CategoryType type) {
     return new Category(name, type, false);
   }
+
+  public Boolean isExpense() {
+    return type == CategoryType.EXPENSE;
+  }
 }
