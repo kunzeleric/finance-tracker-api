@@ -1,5 +1,6 @@
 package com.kunzel.finance_tracker.transaction;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -17,7 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kunzel.finance_tracker.category.dtos.CategoryResponse;
 import com.kunzel.finance_tracker.category.dtos.UpdateCategoryRequest;
 import com.kunzel.finance_tracker.transaction.dtos.CreateTransactionRequest;
+import com.kunzel.finance_tracker.transaction.dtos.TransactionFilter;
 import com.kunzel.finance_tracker.transaction.dtos.TransactionResponse;
+import com.kunzel.finance_tracker.transaction.dtos.TransactionSearchResponse;
 import com.kunzel.finance_tracker.transaction.dtos.UpdateTransactionRequest;
 
 import jakarta.validation.Valid;
@@ -32,12 +35,15 @@ public class TransactionController {
   }
 
   @GetMapping
-  public ResponseEntity<List<TransactionResponse>> fetchTransactions(
+  public ResponseEntity<TransactionSearchResponse> fetchTransactions(
       @RequestParam(required = false) Long accountId,
-      @RequestParam(required = false) Long categoryId) {
-    List<TransactionResponse> transactions = transactionService.searchTransactions(accountId, categoryId).stream()
-        .map(TransactionResponse::from).toList();
-    return ResponseEntity.ok().body(transactions);
+      @RequestParam(required = false) Long categoryId,
+      @RequestParam(required = false) LocalDate startDate,
+      @RequestParam(required = false) LocalDate endDate) {
+    TransactionFilter filters = TransactionFilter.from(accountId, categoryId, startDate, endDate);
+    List<Transaction> transactions = transactionService.searchTransactions(accountId, categoryId, startDate, endDate);
+
+    return ResponseEntity.ok().body(TransactionSearchResponse.of(transactions, filters));
   }
 
   @GetMapping("/{id}")

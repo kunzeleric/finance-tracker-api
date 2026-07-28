@@ -27,20 +27,8 @@ public class TransactionService {
     this.accountRepository = accountRepository;
   }
 
-  public List<Transaction> searchTransactions(Long accountId, Long categoryId) {
-    if (accountId != null && categoryId != null) {
-      return transactionRepository.findByAccountIdAndCategoryId(accountId, categoryId);
-    }
-
-    if (accountId != null) {
-      return transactionRepository.findByAccountId(accountId);
-    }
-
-    if (categoryId != null) {
-      return transactionRepository.findByCategoryId(categoryId);
-    }
-
-    return transactionRepository.findAll();
+  public List<Transaction> searchTransactions(Long accountId, Long categoryId, LocalDate startDate, LocalDate endDate) {
+    return transactionRepository.search(accountId, categoryId, startDate, endDate);
   }
 
   public Transaction getTransactionById(Long transactionId) {

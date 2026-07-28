@@ -25,7 +25,7 @@ Progresso de implementação dos requisitos da V1. Marque cada item conforme con
 
 - [x] Transação tem valor (positivo), data, categoria e conta associados
 - [x] Tipo (receita/despesa) derivado da categoria associada
-- [ ] Ao criar transação, atualizar saldo da conta conforme tipo da categoria (receita soma, despesa subtrai)
+- [x] Ao criar transação, atualizar saldo da conta conforme tipo da categoria (receita soma, despesa subtrai)
 
 ### RF04 — Listar transações
 
