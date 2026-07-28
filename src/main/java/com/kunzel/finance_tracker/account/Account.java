@@ -7,6 +7,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.kunzel.finance_tracker.account.exceptions.InsufficientBalanceException;
 import com.kunzel.finance_tracker.account.exceptions.InvalidBalanceException;
+import com.kunzel.finance_tracker.category.Category;
 import com.kunzel.finance_tracker.transaction.Transaction;
 
 import jakarta.persistence.Column;
@@ -139,6 +140,26 @@ public class Account {
   private static void validatePositiveAmount(BigDecimal amount, String message) {
     if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
       throw new IllegalArgumentException(message);
+    }
+  }
+
+  // Desfaz o efeito de uma transação existente (delete/update). Não valida.
+  // Desfazer um EXPENSE, gera credito
+  // Desfazer um INCOME, reduz o saldo
+  public void reverseTransaction(Category category, BigDecimal amount) {
+    if (category.isExpense()) {
+      currentBalance = currentBalance.add(amount);
+    } else {
+      currentBalance = currentBalance.subtract(amount);
+    }
+  }
+
+  // Aplica o efeito de uma transação nova/atualizada, sem validar saldo.
+  public void applyTransaction(Category category, BigDecimal amount) {
+    if (category.isExpense()) {
+      currentBalance = currentBalance.subtract(amount);
+    } else {
+      currentBalance = currentBalance.add(amount);
     }
   }
 }

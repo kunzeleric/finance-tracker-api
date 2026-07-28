@@ -44,7 +44,7 @@ public class TransactionService {
 
     Transaction createdTransaction = transactionRepository
         .save(Transaction.create(description, amount, date, account, category));
-    applyAccountEffect(account, category, amount);
+    account.applyTransaction(category, amount);
 
     return createdTransaction;
   }
@@ -54,23 +54,28 @@ public class TransactionService {
       Long accountId, Long categoryId) {
 
     Transaction transactionToUpdate = getTransactionById(transactionId);
-    reverseAccountEffect(transactionToUpdate.getAccount(), transactionToUpdate.getCategory(),
-        transactionToUpdate.getAmount());
+
+    Account oldAccount = transactionToUpdate.getAccount();
+    Category oldCategory = transactionToUpdate.getCategory();
+    BigDecimal oldAmount = transactionToUpdate.getAmount();
 
     Account newAccount = findAccountById(accountId);
     Category newCategory = findCategoryById(categoryId);
-    applyAccountEffect(newAccount, newCategory, amount);
+
+    oldAccount.reverseTransaction(oldCategory, oldAmount);
+    newAccount.applyTransaction(newCategory, amount);
 
     transactionToUpdate.updateDetails(description, amount, date, newAccount, newCategory);
 
     return transactionToUpdate;
   }
 
+  @Transactional
   public void removeTransaction(Long transactionId) {
     Transaction transactionToRemove = getTransactionById(transactionId);
-    transactionRepository.delete(transactionToRemove);
-    reverseAccountEffect(transactionToRemove.getAccount(), transactionToRemove.getCategory(),
+    transactionToRemove.getAccount().reverseTransaction(transactionToRemove.getCategory(),
         transactionToRemove.getAmount());
+    transactionRepository.delete(transactionToRemove);
   }
 
   private Account findAccountById(Long accountId) {
@@ -81,21 +86,5 @@ public class TransactionService {
   private Category findCategoryById(Long categoryId) {
     return categoryRepository.findById(categoryId)
         .orElseThrow(() -> new NotFoundException(categoryId, "CATEGORIA"));
-  }
-
-  private void applyAccountEffect(Account account, Category category, BigDecimal amount) {
-    if (category.isExpense()) {
-      account.withdraw(amount);
-    } else {
-      account.deposit(amount);
-    }
-  }
-
-  private void reverseAccountEffect(Account account, Category category, BigDecimal amount) {
-    if (category.isExpense()) {
-      account.deposit(amount);
-    } else {
-      account.withdraw(amount);
-    }
   }
 }
