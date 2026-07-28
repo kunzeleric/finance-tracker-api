@@ -69,6 +69,8 @@ public class TransactionService {
   public void removeTransaction(Long transactionId) {
     Transaction transactionToRemove = getTransactionById(transactionId);
     transactionRepository.delete(transactionToRemove);
+    reverseAccountEffect(transactionToRemove.getAccount(), transactionToRemove.getCategory(),
+        transactionToRemove.getAmount());
   }
 
   private Account findAccountById(Long accountId) {
