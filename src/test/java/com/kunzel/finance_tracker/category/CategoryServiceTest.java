@@ -96,11 +96,26 @@ class CategoryServiceTest {
       // confirma que categoria existe
       when(categoryRepository.findById(existingCategory.getId()))
           .thenReturn(Optional.of(existingCategory));
+      // categoria sem lançamentos → remoção liberada
+      when(transactionRepository.existsByCategoryId(existingCategory.getId())).thenReturn(false);
 
       categoryService.removeCategory(existingCategory.getId());
 
       verify(categoryRepository).findById(existingCategory.getId());
       verify(categoryRepository).delete(existingCategory);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenRemovingCategoryWithTransactions() {
+      Category categoryWithTransactions = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
+
+      when(categoryRepository.findById(1L)).thenReturn(Optional.of(categoryWithTransactions));
+      when(transactionRepository.existsByCategoryId(1L)).thenReturn(true);
+
+      assertThatThrownBy(() -> categoryService.removeCategory(1L))
+          .isInstanceOf(IllegalStateException.class);
+
+      verify(categoryRepository, never()).delete(any());
     }
 
     @Test

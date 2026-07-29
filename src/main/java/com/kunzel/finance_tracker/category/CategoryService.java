@@ -59,9 +59,11 @@ public class CategoryService {
       throw new IllegalArgumentException("Categoria padrão não pode ser deletada");
     }
 
+    if (transactionRepository.existsByCategoryId(categoryId)) {
+      throw new IllegalStateException("Categoria com lançamentos registrados não pode ser removida.");
+    }
+
     categoryRepository.delete(categoryToRemove);
-    // TODO: fazer um cascade delete em TRANSACTIONS com mesmo category_id quando
-    // uma categoria for removida
   }
 
   private void assertNameTypeAvailable(String name, CategoryType type, Long excludeId) {
