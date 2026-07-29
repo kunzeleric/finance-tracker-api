@@ -5,13 +5,16 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.kunzel.finance_tracker.shared.exceptions.NotFoundException;
+import com.kunzel.finance_tracker.transaction.TransactionRepository;
 
 @Service
 public class CategoryService {
   private final CategoryRepository categoryRepository;
+  private final TransactionRepository transactionRepository;
 
-  public CategoryService(CategoryRepository categoryRepository) {
+  public CategoryService(CategoryRepository categoryRepository, TransactionRepository transactionRepository) {
     this.categoryRepository = categoryRepository;
+    this.transactionRepository = transactionRepository;
   }
 
   public Category getCategoryById(Long categoryId) {
@@ -37,6 +40,10 @@ public class CategoryService {
 
     if (categoryToUpdate.isDefault()) {
       throw new IllegalArgumentException("Categoria padrão não pode ser atualizada");
+    }
+
+    if (categoryToUpdate.getType() != type && transactionRepository.existsByCategoryId(categoryId)) {
+      throw new IllegalArgumentException("Categoria com transações registradas não pode ter o tipo alterado.");
     }
 
     assertNameTypeAvailable(name, type, categoryId);

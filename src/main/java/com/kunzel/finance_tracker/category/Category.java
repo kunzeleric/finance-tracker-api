@@ -75,7 +75,7 @@ public class Category {
     return type;
   }
 
-  public Boolean isDefault() {
+  public boolean isDefault() {
     return isDefault;
   }
 
@@ -120,7 +120,7 @@ public class Category {
     return new Category(name, type, false);
   }
 
-  public Boolean isExpense() {
+  public boolean isExpense() {
     return type == CategoryType.EXPENSE;
   }
 }

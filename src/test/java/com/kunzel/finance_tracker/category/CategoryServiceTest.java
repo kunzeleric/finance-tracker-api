@@ -18,12 +18,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.kunzel.finance_tracker.shared.exceptions.NotFoundException;
+import com.kunzel.finance_tracker.transaction.TransactionRepository;
 
 @ExtendWith(MockitoExtension.class)
 class CategoryServiceTest {
 
   @Mock
   private CategoryRepository categoryRepository;
+
+  @Mock
+  private TransactionRepository transactionRepository;
 
   @InjectMocks
   private CategoryService categoryService;
@@ -200,6 +204,22 @@ class CategoryServiceTest {
 
       verify(categoryRepository).findById(updatedCategory.getId());
       verify(categoryRepository).save(updatedCategory);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingTypeOfCategoryWithTransactions() {
+      Category categoryWithTransactions = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
+
+      when(categoryRepository.findById(1L)).thenReturn(Optional.of(categoryWithTransactions));
+      when(transactionRepository.existsByCategoryId(1L)).thenReturn(true);
+
+      assertThatThrownBy(() -> categoryService.updateCategory(1L, "Alimentação", CategoryType.INCOME))
+          .isInstanceOf(IllegalArgumentException.class);
+
+      // tipo não pode ter sido mutado antes do throw
+      assertThat(categoryWithTransactions.getType()).isEqualTo(CategoryType.EXPENSE);
+
+      verify(categoryRepository, never()).save(any());
     }
 
     @Test
