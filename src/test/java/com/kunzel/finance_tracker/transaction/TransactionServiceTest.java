@@ -85,23 +85,23 @@ public class TransactionServiceTest {
           LocalDate.of(2026, 7, 27),
           AccountTestFixtures.defaultAccount(), CategoryTestFixtures.customExpenseCategory());
 
-      when(transactionRepository.findById(existing.getId())).thenReturn(Optional.of(existing));
+      when(transactionRepository.findByIdWithRelations(existing.getId())).thenReturn(Optional.of(existing));
 
       Transaction found = transactionService.getTransactionById(existing.getId());
 
       assertThat(found).isEqualTo(existing);
-      verify(transactionRepository).findById(existing.getId());
+      verify(transactionRepository).findByIdWithRelations(existing.getId());
     }
 
     @Test
     void shouldThrowExceptionWhenGettingTransactionWithInvalidId() {
       Long invalidId = 2L;
 
-      when(transactionRepository.findById(invalidId)).thenReturn(Optional.empty());
+      when(transactionRepository.findByIdWithRelations(invalidId)).thenReturn(Optional.empty());
 
       assertThatThrownBy(() -> transactionService.getTransactionById(invalidId)).isInstanceOf(NotFoundException.class);
 
-      verify(transactionRepository).findById(invalidId);
+      verify(transactionRepository).findByIdWithRelations(invalidId);
     }
   }
 
@@ -199,11 +199,11 @@ public class TransactionServiceTest {
           BigDecimal.valueOf(100.00), LocalDate.of(2026, 7, 28), AccountTestFixtures.defaultAccount(),
           CategoryTestFixtures.defaultIncomeCategory());
 
-      when(transactionRepository.findById(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
+      when(transactionRepository.findByIdWithRelations(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
 
       transactionService.removeTransaction(existingTransaction.getId());
 
-      verify(transactionRepository).findById(existingTransaction.getId());
+      verify(transactionRepository).findByIdWithRelations(existingTransaction.getId());
       verify(transactionRepository).delete(existingTransaction);
       verify(accountRepository).save(any(Account.class));
     }
@@ -220,14 +220,14 @@ public class TransactionServiceTest {
 
       account.applyTransaction(existingTransaction.getSignedAmount());
 
-      when(transactionRepository.findById(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
+      when(transactionRepository.findByIdWithRelations(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
 
       transactionService.removeTransaction(existingTransaction.getId());
 
       assertThat(account.getCurrentBalance())
           .isEqualByComparingTo(account.getInitialBalance());
 
-      verify(transactionRepository).findById(existingTransaction.getId());
+      verify(transactionRepository).findByIdWithRelations(existingTransaction.getId());
       verify(accountRepository).save(any(Account.class));
     }
 
@@ -243,14 +243,14 @@ public class TransactionServiceTest {
 
       account.applyTransaction(existingTransaction.getSignedAmount());
 
-      when(transactionRepository.findById(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
+      when(transactionRepository.findByIdWithRelations(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
 
       transactionService.removeTransaction(existingTransaction.getId());
 
       assertThat(account.getCurrentBalance())
           .isEqualByComparingTo(account.getInitialBalance());
 
-      verify(transactionRepository).findById(existingTransaction.getId());
+      verify(transactionRepository).findByIdWithRelations(existingTransaction.getId());
       verify(accountRepository).save(any(Account.class));
     }
 
@@ -258,7 +258,7 @@ public class TransactionServiceTest {
     void shouldThrowExceptionWhenDeletingTransactionWithInvalidId() {
       Long invalidTransactionId = 2L;
 
-      when(transactionRepository.findById(invalidTransactionId)).thenReturn(Optional.empty());
+      when(transactionRepository.findByIdWithRelations(invalidTransactionId)).thenReturn(Optional.empty());
 
       assertThatThrownBy(() -> transactionService.removeTransaction(invalidTransactionId))
           .isInstanceOf(NotFoundException.class);
@@ -280,7 +280,7 @@ public class TransactionServiceTest {
           BigDecimal.valueOf(100.00), LocalDate.of(2026, 7, 28), account,
           category);
 
-      when(transactionRepository.findById(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
+      when(transactionRepository.findByIdWithRelations(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
       when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
       when(categoryRepository.findById(category.getId())).thenReturn(Optional.of(category));
 
@@ -292,7 +292,7 @@ public class TransactionServiceTest {
       assertThat(existingTransactionUpdated.getDescription()).isEqualTo("Transação Teste Novo");
       assertThat(existingTransactionUpdated.getAmount()).isEqualByComparingTo(BigDecimal.valueOf(150.00));
 
-      verify(transactionRepository).findById(existingTransaction.getId());
+      verify(transactionRepository).findByIdWithRelations(existingTransaction.getId());
       verify(transactionRepository).save(existingTransactionUpdated);
     }
 
@@ -307,7 +307,7 @@ public class TransactionServiceTest {
 
       account.applyTransaction(existingTransaction.getSignedAmount());
 
-      when(transactionRepository.findById(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
+      when(transactionRepository.findByIdWithRelations(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
       when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
       when(categoryRepository.findById(category.getId())).thenReturn(Optional.of(category));
       when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -319,7 +319,7 @@ public class TransactionServiceTest {
       assertThat(account.getCurrentBalance())
           .isEqualByComparingTo(account.getInitialBalance().add(BigDecimal.valueOf(150.00)));
 
-      verify(transactionRepository).findById(existingTransaction.getId());
+      verify(transactionRepository).findByIdWithRelations(existingTransaction.getId());
       verify(transactionRepository).save(any(Transaction.class));
       verify(accountRepository, times(2)).save(any(Account.class));
     }
@@ -335,7 +335,7 @@ public class TransactionServiceTest {
 
       account.applyTransaction(existingTransaction.getSignedAmount());
 
-      when(transactionRepository.findById(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
+      when(transactionRepository.findByIdWithRelations(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
       when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
       when(categoryRepository.findById(category.getId())).thenReturn(Optional.of(category));
 
@@ -347,7 +347,7 @@ public class TransactionServiceTest {
       assertThat(account.getCurrentBalance())
           .isEqualByComparingTo(account.getInitialBalance().subtract(BigDecimal.valueOf(150.00)));
 
-      verify(transactionRepository).findById(existingTransaction.getId());
+      verify(transactionRepository).findByIdWithRelations(existingTransaction.getId());
       verify(transactionRepository).save(any(Transaction.class));
       verify(accountRepository, times(2)).save(any(Account.class));
     }
@@ -360,7 +360,7 @@ public class TransactionServiceTest {
       Transaction existingTransaction = TransactionTestFixtures.withId(1L, "Transação Teste",
           BigDecimal.valueOf(100.00), LocalDate.of(2026, 7, 28), account, category);
 
-      when(transactionRepository.findById(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
+      when(transactionRepository.findByIdWithRelations(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
       when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
       when(categoryRepository.findById(category.getId())).thenReturn(Optional.of(category));
 
@@ -368,7 +368,7 @@ public class TransactionServiceTest {
           existingTransaction.getAmount(), existingTransaction.getDate(), account.getId(), category.getId()))
           .isInstanceOf(IllegalArgumentException.class);
 
-      verify(transactionRepository).findById(existingTransaction.getId());
+      verify(transactionRepository).findByIdWithRelations(existingTransaction.getId());
       verify(transactionRepository, never()).save(any());
     }
 
@@ -380,7 +380,7 @@ public class TransactionServiceTest {
       Transaction existingTransaction = TransactionTestFixtures.withId(1L, "Transação Teste",
           BigDecimal.valueOf(100.00), LocalDate.of(2026, 7, 28), account, category);
 
-      when(transactionRepository.findById(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
+      when(transactionRepository.findByIdWithRelations(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
       when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
       when(categoryRepository.findById(category.getId())).thenReturn(Optional.of(category));
 
@@ -388,7 +388,7 @@ public class TransactionServiceTest {
           BigDecimal.valueOf(-100.00), existingTransaction.getDate(), account.getId(), category.getId()))
           .isInstanceOf(IllegalArgumentException.class);
 
-      verify(transactionRepository).findById(existingTransaction.getId());
+      verify(transactionRepository).findByIdWithRelations(existingTransaction.getId());
       verify(transactionRepository, never()).save(any());
     }
 

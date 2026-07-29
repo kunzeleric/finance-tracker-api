@@ -32,7 +32,7 @@ public class TransactionService {
   }
 
   public Transaction getTransactionById(Long transactionId) {
-    return transactionRepository.findById(transactionId)
+    return transactionRepository.findByIdWithRelations(transactionId)
         .orElseThrow(() -> new NotFoundException(transactionId, "TRANSAÇÃO"));
   }
 
