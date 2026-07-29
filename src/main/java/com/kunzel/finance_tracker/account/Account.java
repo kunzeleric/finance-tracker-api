@@ -94,7 +94,7 @@ public class Account {
   }
 
   public static Account create(String name, BigDecimal initialBalance, AccountType type) {
-    if (initialBalance.compareTo(BigDecimal.ZERO) < 0) {
+    if (initialBalance == null || initialBalance.compareTo(BigDecimal.ZERO) < 0) {
       throw new InvalidBalanceException(initialBalance);
     }
 
