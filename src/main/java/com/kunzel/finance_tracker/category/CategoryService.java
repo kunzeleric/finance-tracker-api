@@ -41,7 +41,7 @@ public class CategoryService {
 
     assertNameTypeAvailable(name, type, categoryId);
 
-    categoryToUpdate.updateDetails(name, type);
+    categoryToUpdate.update(name, type);
     return categoryRepository.save(categoryToUpdate);
   }
 

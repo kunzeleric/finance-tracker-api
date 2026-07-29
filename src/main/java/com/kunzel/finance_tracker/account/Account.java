@@ -109,7 +109,7 @@ public class Account {
     return new Account(name, initialBalance, type);
   }
 
-  public void updateDetails(String name, AccountType type) {
+  public void update(String name, AccountType type) {
     if (name != null) {
       if (name.isBlank()) {
         throw new IllegalArgumentException("Nome da conta não pode estar em branco");

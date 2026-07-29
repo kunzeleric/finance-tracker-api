@@ -115,7 +115,7 @@ public class Transaction {
     return new Transaction(description, amount, date, account, category);
   }
 
-  public void updateDetails(String description, BigDecimal amount, LocalDate date, Account account, Category category) {
+  public void update(String description, BigDecimal amount, LocalDate date, Account account, Category category) {
     validate(description, amount, date, account, category);
     this.description = description;
     this.amount = amount;

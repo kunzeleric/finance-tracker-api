@@ -32,7 +32,7 @@ public class AccountService {
     Account accountToUpdate = getAccountById(accountId);
     assertNameTypeAvailable(name, type, accountId);
 
-    accountToUpdate.updateDetails(name, type);
+    accountToUpdate.update(name, type);
     return accountRepository.save(accountToUpdate);
   }
 

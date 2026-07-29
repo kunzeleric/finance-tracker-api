@@ -104,7 +104,7 @@ public class Category {
     this.type = type;
   }
 
-  public void updateDetails(String name, CategoryType type) {
+  public void update(String name, CategoryType type) {
     rename(name);
     changeType(type);
   }

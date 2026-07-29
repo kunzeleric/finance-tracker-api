@@ -63,7 +63,7 @@ public class TransactionService {
     Account newAccount = findAccountById(accountId);
     Category newCategory = findCategoryById(categoryId);
 
-    transactionToUpdate.updateDetails(description, amount, date, newAccount, newCategory);
+    transactionToUpdate.update(description, amount, date, newAccount, newCategory);
 
     oldAccount.reverseTransaction(oldCategory, oldAmount);
     newAccount.applyTransaction(newCategory, amount);
