@@ -24,4 +24,10 @@ public class CategoryTestFixtures {
     ReflectionTestUtils.setField(category, "id", id);
     return category;
   }
+
+  public static Category defaultWithId(Long id, String name, CategoryType type) {
+    Category category = Category.createDefault(name, type);
+    ReflectionTestUtils.setField(category, "id", id);
+    return category;
+  }
 }

@@ -180,7 +180,7 @@ class CategoryServiceTest {
   class Update {
 
     @Test
-    void shouldUpdateCategoryWithValidName() {
+    void shouldUpdateCustomCategoryWithValidName() {
       Category existingCategory = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
       String newCategoryName = "Alimentação Shopping";
 
@@ -203,7 +203,24 @@ class CategoryServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenUpdatingCategoryWithExistingNameAndType() {
+    void shouldThrowExceptionWhenUpdatingDefaultCategory() {
+      Category existingDefaultCategory = CategoryTestFixtures.defaultWithId(1L, "Categoria Padrão",
+          CategoryType.INCOME);
+
+      when(categoryRepository.findById(existingDefaultCategory.getId()))
+          .thenReturn(Optional.of(existingDefaultCategory));
+
+      assertThatThrownBy(
+          () -> categoryService.updateCategory(existingDefaultCategory.getId(), "Nova Categoria Padrão",
+              CategoryType.EXPENSE))
+          .isInstanceOf(IllegalArgumentException.class);
+
+      verify(categoryRepository).findById(existingDefaultCategory.getId());
+      verify(categoryRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUpdatingCustomCategoryWithExistingNameAndType() {
       Category regularCategory = CategoryTestFixtures.withId(1L, "Freelance", CategoryType.INCOME);
       Category categoryToBeUpdated = CategoryTestFixtures.withId(2L, "Salário", CategoryType.INCOME);
 
@@ -220,7 +237,7 @@ class CategoryServiceTest {
     }
 
     @Test
-    void shouldUpdateCategoryWhenNameAndTypeBelongToItself() {
+    void shouldUpdateCustomCategoryWhenNameAndTypeBelongToItself() {
       Category categoryToBeUpdated = CategoryTestFixtures.withId(1L, "Freelance", CategoryType.INCOME);
 
       when(categoryRepository.findById(categoryToBeUpdated.getId())).thenReturn(Optional.of(categoryToBeUpdated));

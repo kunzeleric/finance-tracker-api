@@ -34,6 +34,11 @@ public class CategoryService {
 
   public Category updateCategory(Long categoryId, String name, CategoryType type) {
     Category categoryToUpdate = getCategoryById(categoryId);
+
+    if (categoryToUpdate.isDefault()) {
+      throw new IllegalArgumentException("Categoria padrão não pode ser atualizada");
+    }
+
     assertNameTypeAvailable(name, type, categoryId);
 
     categoryToUpdate.updateDetails(name, type);
