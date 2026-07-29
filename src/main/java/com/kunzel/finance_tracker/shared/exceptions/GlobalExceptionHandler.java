@@ -91,7 +91,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
   public ProblemDetail handleAccountBalanceException(RuntimeException ex) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
         HttpStatus.BAD_REQUEST, ex.getMessage());
-    problemDetail.setTitle("Regra de Negócio Violada");
+    problemDetail.setTitle("Requisição Inválida");
     return problemDetail;
   }
 
