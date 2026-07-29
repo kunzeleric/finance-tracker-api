@@ -20,9 +20,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "accounts")
+@Table(name = "accounts", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_account_type", columnNames = { "name", "type" })
+})
 public class Account {
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "account_seq")

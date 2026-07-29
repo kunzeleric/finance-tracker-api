@@ -7,6 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 public record UpdateAccountRequest(
-        @Pattern(regexp = ".*\\S.*", message = "não pode estar em branco") String name,
-        @NotNull(message = "não pode estar em branco") AccountType type) {
+                @NotNull(message = "não pode estar em branco") @Pattern(regexp = ".*\\S.*", message = "não pode estar em branco") String name,
+                @NotNull(message = "não pode estar em branco") AccountType type) {
 }

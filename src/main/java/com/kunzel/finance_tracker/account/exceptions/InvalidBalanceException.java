@@ -4,6 +4,6 @@ import java.math.BigDecimal;
 
 public class InvalidBalanceException extends RuntimeException {
   public InvalidBalanceException(BigDecimal balance) {
-    super("Saldo inicial não pode ser 0 (zero) ou vazio. Saldo inserido: " + balance);
+    super("Saldo inicial não pode menor que 0 (zero) ou vazio. Saldo inserido: " + balance);
   }
 }
