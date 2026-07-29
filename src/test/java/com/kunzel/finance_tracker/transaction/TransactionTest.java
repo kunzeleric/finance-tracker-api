@@ -16,6 +16,7 @@ import com.kunzel.finance_tracker.account.Account;
 import com.kunzel.finance_tracker.category.Category;
 import com.kunzel.finance_tracker.account.AccountTestFixtures;
 import com.kunzel.finance_tracker.category.CategoryTestFixtures;
+import com.kunzel.finance_tracker.category.CategoryType;
 
 public class TransactionTest {
   List<Transaction> transactions;
@@ -63,10 +64,31 @@ public class TransactionTest {
 
       String transactionNewName = "Transação teste 2";
 
-      transaction.updateDetails(transactionNewName, transaction.getAmount(), transaction.getDate(),
+      transaction.update(transactionNewName, transaction.getAmount(), transaction.getDate(),
           transaction.getAccount(), transaction.getCategory());
 
       assertThat(transaction.getDescription()).isEqualTo(transactionNewName);
+    }
+  }
+
+  @Nested
+  class Amount {
+    @Test
+    void shouldReturnProperSignedAmountForIncomeTransaction() {
+      Transaction transaction = Transaction.create("Transação Income", new BigDecimal(100.00), LocalDate.now(), account,
+          category);
+
+      assertThat(transaction.getSignedAmount()).isPositive();
+    }
+
+    @Test
+    void shouldReturnProperSignedAmountForExpenseTransaction() {
+      Category expenseCategory = Category.createCustom("Mercado", CategoryType.EXPENSE);
+      Transaction transaction = Transaction.create("Transação Expense", new BigDecimal(100.00), LocalDate.now(),
+          account,
+          expenseCategory);
+
+      assertThat(transaction.getSignedAmount()).isNegative();
     }
   }
 }
