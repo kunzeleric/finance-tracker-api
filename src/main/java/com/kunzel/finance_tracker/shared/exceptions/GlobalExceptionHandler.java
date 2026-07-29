@@ -87,8 +87,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return problemDetail;
   }
 
-  @ExceptionHandler({ InvalidBalanceException.class, InsufficientBalanceException.class })
-  public ProblemDetail handleAccountDomainErrors(RuntimeException ex) {
+  @ExceptionHandler(InvalidBalanceException.class)
+  public ProblemDetail handleAccountBalanceException(RuntimeException ex) {
+    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+        HttpStatus.BAD_REQUEST, ex.getMessage());
+    problemDetail.setTitle("Regra de Negócio Violada");
+    return problemDetail;
+  }
+
+  @ExceptionHandler(InsufficientBalanceException.class)
+  public ProblemDetail handleAccountInsufficientException(RuntimeException ex) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
         HttpStatus.CONFLICT, ex.getMessage());
     problemDetail.setTitle("Regra de Negócio Violada");
