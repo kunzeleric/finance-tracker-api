@@ -6,7 +6,7 @@ Progresso de implementação dos requisitos da V1. Marque cada item conforme con
 
 - [x] `Conta` (ex: carteira, banco X, cartão Y)
 - [x] `Categoria` (ex: alimentação, transporte, salário)
-- [ ] `Transação` (valor, data, categoria, conta) — tipo herdado da categoria
+- [x] `Transação` (valor, data, categoria, conta) — tipo herdado da categoria
 
 ## Requisitos funcionais
 
@@ -46,15 +46,15 @@ Progresso de implementação dos requisitos da V1. Marque cada item conforme con
 
 ### RNF01 — TDD como processo
 
-- [ ] Cada regra (RF01–RF06) tem teste unitário escrito **antes** da implementação no service
-- [ ] Todo método de service com lógica condicional tem teste de caminho feliz + caminho de erro
+- [x] Cada regra (RF01–RF06) tem teste unitário escrito **antes** da implementação no service
+- [x] Todo método de service com lógica condicional tem teste de caminho feliz + caminho de erro
 
 ### RNF02 — Isolamento de testes unitários
 
-- [ ] Testes de service rodam sem subir o contexto do Spring
-- [ ] Testes de service não acessam banco real (repositories mockados)
+- [x] Testes de service rodam sem subir o contexto do Spring
+- [x] Testes de service não acessam banco real (repositories mockados)
 
 ### RNF03 — Arquitetura em camadas
 
-- [ ] Separação clara entre Controller, Service, Repository e domínio (entidades/DTOs)
-- [ ] Sem lógica de negócio dentro do Controller
+- [x] Separação clara entre Controller, Service, Repository e domínio (entidades/DTOs)
+- [x] Sem lógica de negócio dentro do Controller
