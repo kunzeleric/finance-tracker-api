@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import com.kunzel.finance_tracker.account.exceptions.InsufficientBalanceException;
 import com.kunzel.finance_tracker.account.exceptions.InvalidBalanceException;
 
 import tools.jackson.databind.DatabindException;
@@ -96,14 +95,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return problemDetail;
   }
 
-  @ExceptionHandler(InsufficientBalanceException.class)
-  public ProblemDetail handleAccountInsufficientException(RuntimeException ex) {
-    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-        HttpStatus.CONFLICT, ex.getMessage());
-    problemDetail.setTitle("Regra de Negócio Violada");
-    return problemDetail;
-  }
-
   @ExceptionHandler({ IllegalArgumentException.class, IllegalStateException.class })
   public ProblemDetail handleIllegalArgumentAndState(RuntimeException ex) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -113,15 +104,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
   }
 
   @ExceptionHandler(DataIntegrityViolationException.class)
-  public ProblemDetail handleDataIntegrityViolation(RuntimeException ex) {
+  public ProblemDetail handleDataIntegrityViolation(DataIntegrityViolationException ex) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-        HttpStatus.CONFLICT, ex.getMessage());
-    problemDetail.setTitle("Violação de Integridade de Dados");
+        HttpStatus.CONFLICT, "A operação viola uma restrição de integridade dos dados.");
+    problemDetail.setTitle("Conflito de Dados");
     return problemDetail;
   }
 
   @ExceptionHandler(Exception.class)
   public ProblemDetail handleGenericException(Exception ex) {
+    logger.error("Erro não tratado", ex);
+
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
         HttpStatus.INTERNAL_SERVER_ERROR, "Ocorreu um erro inesperado.");
     problemDetail.setTitle("Erro Interno");
