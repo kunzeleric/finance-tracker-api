@@ -3,6 +3,7 @@ package com.kunzel.finance_tracker.category;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -220,6 +221,45 @@ class CategoryServiceTest {
       assertThat(categoryWithTransactions.getType()).isEqualTo(CategoryType.EXPENSE);
 
       verify(categoryRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldUpdateTypeOfCustomCategoryWithoutTransactions() {
+      Category categoryWithoutTransactions = CategoryTestFixtures.withId(1L, "Bônus", CategoryType.EXPENSE);
+
+      when(categoryRepository.findById(1L)).thenReturn(Optional.of(categoryWithoutTransactions));
+      // nenhum lançamento usa essa categoria → troca de tipo é permitida
+      when(transactionRepository.existsByCategoryId(1L)).thenReturn(false);
+      when(categoryRepository.findExistingCategoryByNameAndType("Bônus", CategoryType.INCOME))
+          .thenReturn(Optional.empty());
+      when(categoryRepository.save(any(Category.class))).thenAnswer(inv -> inv.getArgument(0));
+
+      Category updatedCategory = categoryService.updateCategory(1L, "Bônus", CategoryType.INCOME);
+
+      assertThat(updatedCategory.getType()).isEqualTo(CategoryType.INCOME);
+      assertThat(updatedCategory.getName()).isEqualTo("Bônus");
+
+      verify(transactionRepository).existsByCategoryId(1L);
+      verify(categoryRepository).save(updatedCategory);
+    }
+
+    @Test
+    void shouldUpdateNameOfCustomCategoryWithTransactionsWhenTypeIsUnchanged() {
+      Category categoryWithTransactions = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
+
+      when(categoryRepository.findById(1L)).thenReturn(Optional.of(categoryWithTransactions));
+      when(categoryRepository.findExistingCategoryByNameAndType("Mercado", CategoryType.EXPENSE))
+          .thenReturn(Optional.empty());
+      when(categoryRepository.save(any(Category.class))).thenAnswer(inv -> inv.getArgument(0));
+
+      Category updatedCategory = categoryService.updateCategory(1L, "Mercado", CategoryType.EXPENSE);
+
+      assertThat(updatedCategory.getName()).isEqualTo("Mercado");
+      assertThat(updatedCategory.getType()).isEqualTo(CategoryType.EXPENSE);
+
+      // tipo não mudou → guarda nem chega a consultar os lançamentos
+      verify(transactionRepository, never()).existsByCategoryId(anyLong());
+      verify(categoryRepository).save(updatedCategory);
     }
 
     @Test
