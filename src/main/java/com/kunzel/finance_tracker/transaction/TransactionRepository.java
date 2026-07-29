@@ -27,4 +27,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
   Optional<Transaction> findByIdWithRelations(Long transactionId);
 
   boolean existsByCategoryId(Long categoryId);
+
+  boolean existsByAccountId(Long accountId);
 }

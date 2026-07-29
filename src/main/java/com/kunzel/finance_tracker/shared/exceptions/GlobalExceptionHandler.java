@@ -95,11 +95,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return problemDetail;
   }
 
-  @ExceptionHandler({ IllegalArgumentException.class, IllegalStateException.class })
-  public ProblemDetail handleIllegalArgumentAndState(RuntimeException ex) {
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
         HttpStatus.BAD_REQUEST, ex.getMessage());
     problemDetail.setTitle("Requisição Inválida");
+    return problemDetail;
+  }
+
+  @ExceptionHandler(IllegalStateException.class)
+  public ProblemDetail handleIllegalState(IllegalStateException ex) {
+    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+        HttpStatus.CONFLICT, ex.getMessage());
+    problemDetail.setTitle("Operação Não Permitida");
     return problemDetail;
   }
 

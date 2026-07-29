@@ -6,13 +6,16 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.kunzel.finance_tracker.shared.exceptions.NotFoundException;
+import com.kunzel.finance_tracker.transaction.TransactionRepository;
 
 @Service
 public class AccountService {
   private final AccountRepository accountRepository;
+  private final TransactionRepository transactionRepository;
 
-  public AccountService(AccountRepository accountRepository) {
+  public AccountService(AccountRepository accountRepository, TransactionRepository transactionRepository) {
     this.accountRepository = accountRepository;
+    this.transactionRepository = transactionRepository;
   }
 
   public List<Account> getAllAccounts() {
@@ -38,9 +41,12 @@ public class AccountService {
 
   public void removeAccount(Long accountId) {
     Account found = getAccountById(accountId);
-    accountRepository.delete(found);
 
-    // TODO: cascade delete de TRANSACTIONS ligadas à conta removida (account_id)
+    if (transactionRepository.existsByAccountId(accountId)) {
+      throw new IllegalStateException("Conta com lançamentos registrados não pode ser removida.");
+    }
+
+    accountRepository.delete(found);
   }
 
   public BigDecimal getTotalBalance() {

@@ -20,11 +20,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.kunzel.finance_tracker.account.exceptions.InvalidBalanceException;
 import com.kunzel.finance_tracker.shared.exceptions.NotFoundException;
+import com.kunzel.finance_tracker.transaction.TransactionRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class AccountServiceTest {
   @Mock
   private AccountRepository accountRepository;
+
+  @Mock
+  private TransactionRepository transactionRepository;
 
   @InjectMocks
   private AccountService accountService;
@@ -196,11 +200,27 @@ public class AccountServiceTest {
           AccountType.INVESTMENT);
 
       when(accountRepository.findById(existingAccount.getId())).thenReturn(Optional.of(existingAccount));
+      // conta sem lançamentos → remoção liberada
+      when(transactionRepository.existsByAccountId(existingAccount.getId())).thenReturn(false);
 
       accountService.removeAccount(existingAccount.getId());
 
       verify(accountRepository).findById(existingAccount.getId());
       verify(accountRepository).delete(existingAccount);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenRemovingAccountWithTransactions() {
+      Account accountWithTransactions = AccountTestFixtures.withId(1L, "Conta Teste", BigDecimal.valueOf(100.00),
+          AccountType.INVESTMENT);
+
+      when(accountRepository.findById(1L)).thenReturn(Optional.of(accountWithTransactions));
+      when(transactionRepository.existsByAccountId(1L)).thenReturn(true);
+
+      assertThatThrownBy(() -> accountService.removeAccount(1L))
+          .isInstanceOf(IllegalStateException.class);
+
+      verify(accountRepository, never()).delete(any());
     }
 
     @Test
