@@ -63,12 +63,13 @@ public class TransactionService {
     Account newAccount = findAccountById(accountId);
     Category newCategory = findCategoryById(categoryId);
 
+    transactionToUpdate.updateDetails(description, amount, date, newAccount, newCategory);
+
     oldAccount.reverseTransaction(oldCategory, oldAmount);
     newAccount.applyTransaction(newCategory, amount);
+
     accountRepository.save(oldAccount);
     accountRepository.save(newAccount);
-
-    transactionToUpdate.updateDetails(description, amount, date, newAccount, newCategory);
 
     return transactionRepository.save(transactionToUpdate);
   }
@@ -76,8 +77,13 @@ public class TransactionService {
   @Transactional
   public void removeTransaction(Long transactionId) {
     Transaction transactionToRemove = getTransactionById(transactionId);
-    transactionToRemove.getAccount().reverseTransaction(transactionToRemove.getCategory(),
+
+    // explicitamente atualizando account no repositorio
+    Account account = transactionToRemove.getAccount();
+    account.reverseTransaction(transactionToRemove.getCategory(),
         transactionToRemove.getAmount());
+    accountRepository.save(account);
+
     transactionRepository.delete(transactionToRemove);
   }
 

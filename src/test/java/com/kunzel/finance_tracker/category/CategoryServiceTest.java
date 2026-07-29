@@ -35,10 +35,10 @@ class CategoryServiceTest {
       // ARRANGE — repo diz que já existe categoria com esse nome+tipo.
       // Fixture com id → simula categoria já persistida (assertNameTypeAvailable lê
       // getId()).
-      Category existing = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
+      Category existingCategory = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
 
       when(categoryRepository.findExistingCategoryByNameAndType("Alimentação", CategoryType.EXPENSE))
-          .thenReturn(Optional.of(existing));
+          .thenReturn(Optional.of(existingCategory));
 
       // ACT + ASSERT — service deve barrar a duplicata.
       assertThatThrownBy(() -> categoryService.createCategory("Alimentação", CategoryType.EXPENSE))
@@ -86,20 +86,20 @@ class CategoryServiceTest {
   class Delete {
     @Test
     void shouldRemoveExistingCategory() {
-      Category existing = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
+      Category existingCategory = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
 
       // confirma que categoria existe
-      when(categoryRepository.findById(existing.getId()))
-          .thenReturn(Optional.of(existing));
+      when(categoryRepository.findById(existingCategory.getId()))
+          .thenReturn(Optional.of(existingCategory));
 
-      categoryService.removeCategory(existing.getId());
+      categoryService.removeCategory(existingCategory.getId());
 
-      verify(categoryRepository).findById(existing.getId());
-      verify(categoryRepository).delete(existing);
+      verify(categoryRepository).findById(existingCategory.getId());
+      verify(categoryRepository).delete(existingCategory);
     }
 
     @Test
-    void shouldThrowExceptionWhenDeletingInexistentCategory() {
+    void shouldThrowExceptionWhenDeletingCategoryWithInvalidId() {
       Long inexistentCategoryId = 2L;
 
       // confirma que categoria não existe
@@ -152,13 +152,13 @@ class CategoryServiceTest {
 
     @Test
     void shouldGetCategoryWithValidId() {
-      Category existing = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
+      Category existingCategory = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
 
-      when(categoryRepository.findById(existing.getId())).thenReturn(Optional.of(existing));
+      when(categoryRepository.findById(existingCategory.getId())).thenReturn(Optional.of(existingCategory));
 
-      Category foundCategory = categoryService.getCategoryById(existing.getId());
+      Category foundCategory = categoryService.getCategoryById(existingCategory.getId());
 
-      assertThat(foundCategory.getId()).isEqualByComparingTo(existing.getId());
+      assertThat(foundCategory.getId()).isEqualByComparingTo(existingCategory.getId());
 
       verify(categoryRepository).findById(foundCategory.getId());
     }
@@ -181,22 +181,22 @@ class CategoryServiceTest {
 
     @Test
     void shouldUpdateCategoryWithValidName() {
-      Category existing = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
+      Category existingCategory = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
       String newCategoryName = "Alimentação Shopping";
 
       // espera que categoria exista
-      when(categoryRepository.findById(existing.getId())).thenReturn(Optional.of(existing));
+      when(categoryRepository.findById(existingCategory.getId())).thenReturn(Optional.of(existingCategory));
       // espera que não tenha conflito de nomes
-      when(categoryRepository.findExistingCategoryByNameAndType(newCategoryName, existing.getType()))
+      when(categoryRepository.findExistingCategoryByNameAndType(newCategoryName, existingCategory.getType()))
           .thenReturn(Optional.empty());
       // deixa explicito o retorno do mock
       when(categoryRepository.save(any(Category.class))).thenAnswer(inv -> inv.getArgument(0));
 
-      Category updatedCategory = categoryService.updateCategory(existing.getId(), newCategoryName,
+      Category updatedCategory = categoryService.updateCategory(existingCategory.getId(), newCategoryName,
           CategoryType.EXPENSE);
 
       assertThat(updatedCategory.getName()).isEqualTo(newCategoryName);
-      assertThat(updatedCategory.getId()).isEqualByComparingTo(existing.getId());
+      assertThat(updatedCategory.getId()).isEqualByComparingTo(existingCategory.getId());
 
       verify(categoryRepository).findById(updatedCategory.getId());
       verify(categoryRepository).save(updatedCategory);

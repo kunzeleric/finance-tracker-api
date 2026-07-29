@@ -14,6 +14,8 @@ import org.junit.jupiter.api.Test;
 
 import com.kunzel.finance_tracker.account.Account;
 import com.kunzel.finance_tracker.category.Category;
+import com.kunzel.finance_tracker.account.AccountTestFixtures;
+import com.kunzel.finance_tracker.category.CategoryTestFixtures;
 
 public class TransactionTest {
   List<Transaction> transactions;
@@ -22,8 +24,8 @@ public class TransactionTest {
 
   @BeforeEach
   void setup() {
-    category = TransactionTestFixtures.defaultCategory();
-    account = TransactionTestFixtures.defaultAccount();
+    category = CategoryTestFixtures.defaultIncomeCategory();
+    account = AccountTestFixtures.defaultAccount();
   }
 
   @Nested
