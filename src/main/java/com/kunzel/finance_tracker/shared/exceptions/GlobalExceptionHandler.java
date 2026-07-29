@@ -103,8 +103,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return problemDetail;
   }
 
-  @ExceptionHandler(IllegalArgumentException.class)
-  public ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
+  @ExceptionHandler({ IllegalArgumentException.class, IllegalStateException.class })
+  public ProblemDetail handleIllegalArgumentAndState(IllegalArgumentException ex) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
         HttpStatus.BAD_REQUEST, ex.getMessage());
     problemDetail.setTitle("Requisição Inválida");
