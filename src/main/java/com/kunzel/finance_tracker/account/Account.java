@@ -5,9 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.kunzel.finance_tracker.account.exceptions.InsufficientBalanceException;
 import com.kunzel.finance_tracker.account.exceptions.InvalidBalanceException;
-import com.kunzel.finance_tracker.category.Category;
 import com.kunzel.finance_tracker.transaction.Transaction;
 
 import jakarta.persistence.Column;
@@ -125,44 +123,16 @@ public class Account {
     }
   }
 
-  public void deposit(BigDecimal amount) {
-    validatePositiveAmount(amount, "Valor tem que ser positivo para ser depositado.");
-    this.currentBalance = this.currentBalance.add(amount);
-  }
-
-  public void withdraw(BigDecimal amount) {
-    validatePositiveAmount(amount, "Valor tem que ser positivo para ser sacado.");
-
-    if (this.currentBalance.compareTo(amount) < 0) {
-      throw new InsufficientBalanceException(amount);
-    }
-
-    this.currentBalance = this.currentBalance.subtract(amount);
-  }
-
-  private static void validatePositiveAmount(BigDecimal amount, String message) {
-    if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException(message);
-    }
+  // Aplica o efeito de uma transação nova/atualizada, sem validar saldo.
+  public void applyTransaction(BigDecimal signedAmount) {
+    this.currentBalance = this.currentBalance.add(signedAmount);
   }
 
   // Desfaz o efeito de uma transação existente (delete/update). Não valida.
   // Desfazer um EXPENSE, gera credito
   // Desfazer um INCOME, reduz o saldo
-  public void reverseTransaction(Category category, BigDecimal amount) {
-    if (category.isExpense()) {
-      currentBalance = currentBalance.add(amount);
-    } else {
-      currentBalance = currentBalance.subtract(amount);
-    }
+  public void reverseTransaction(BigDecimal signedAmount) {
+    this.currentBalance = this.currentBalance.subtract(signedAmount);
   }
 
-  // Aplica o efeito de uma transação nova/atualizada, sem validar saldo.
-  public void applyTransaction(Category category, BigDecimal amount) {
-    if (category.isExpense()) {
-      currentBalance = currentBalance.subtract(amount);
-    } else {
-      currentBalance = currentBalance.add(amount);
-    }
-  }
 }

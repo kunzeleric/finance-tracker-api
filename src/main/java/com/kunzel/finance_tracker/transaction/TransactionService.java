@@ -12,7 +12,7 @@ import com.kunzel.finance_tracker.category.Category;
 import com.kunzel.finance_tracker.category.CategoryRepository;
 import com.kunzel.finance_tracker.shared.exceptions.NotFoundException;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TransactionService {
@@ -46,7 +46,7 @@ public class TransactionService {
     Transaction createdTransaction = Transaction.create(description, amount, date, account, category);
     transactionRepository.save(createdTransaction);
 
-    account.applyTransaction(category, amount);
+    account.applyTransaction(createdTransaction.getSignedAmount());
     accountRepository.save(account);
 
     return createdTransaction;
@@ -59,16 +59,15 @@ public class TransactionService {
     Transaction transactionToUpdate = getTransactionById(transactionId);
 
     Account oldAccount = transactionToUpdate.getAccount();
-    Category oldCategory = transactionToUpdate.getCategory();
-    BigDecimal oldAmount = transactionToUpdate.getAmount();
+    BigDecimal oldSignedAmount = transactionToUpdate.getSignedAmount();
 
     Account newAccount = findAccountById(accountId);
     Category newCategory = findCategoryById(categoryId);
 
     transactionToUpdate.update(description, amount, date, newAccount, newCategory);
 
-    oldAccount.reverseTransaction(oldCategory, oldAmount);
-    newAccount.applyTransaction(newCategory, amount);
+    oldAccount.reverseTransaction(oldSignedAmount);
+    newAccount.applyTransaction(transactionToUpdate.getSignedAmount());
 
     accountRepository.save(oldAccount);
     accountRepository.save(newAccount);
@@ -82,8 +81,7 @@ public class TransactionService {
 
     // explicitamente atualizando account no repositorio
     Account account = transactionToRemove.getAccount();
-    account.reverseTransaction(transactionToRemove.getCategory(),
-        transactionToRemove.getAmount());
+    account.reverseTransaction(transactionToRemove.getSignedAmount());
     accountRepository.save(account);
 
     transactionRepository.delete(transactionToRemove);

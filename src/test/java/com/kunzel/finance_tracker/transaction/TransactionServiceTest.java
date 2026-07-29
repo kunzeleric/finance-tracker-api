@@ -218,7 +218,7 @@ public class TransactionServiceTest {
           BigDecimal.valueOf(100.00), LocalDate.of(2026, 7, 28), account,
           category);
 
-      account.applyTransaction(category, BigDecimal.valueOf(100.00));
+      account.applyTransaction(existingTransaction.getSignedAmount());
 
       when(transactionRepository.findById(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
 
@@ -241,7 +241,7 @@ public class TransactionServiceTest {
           BigDecimal.valueOf(100.00), LocalDate.of(2026, 7, 28), account,
           category);
 
-      account.applyTransaction(category, BigDecimal.valueOf(100.00));
+      account.applyTransaction(existingTransaction.getSignedAmount());
 
       when(transactionRepository.findById(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
 
@@ -305,7 +305,7 @@ public class TransactionServiceTest {
           BigDecimal.valueOf(100.00), LocalDate.of(2026, 7, 28), account,
           category);
 
-      account.applyTransaction(category, BigDecimal.valueOf(100.00));
+      account.applyTransaction(existingTransaction.getSignedAmount());
 
       when(transactionRepository.findById(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
       when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
@@ -333,7 +333,7 @@ public class TransactionServiceTest {
           BigDecimal.valueOf(100.00), LocalDate.of(2026, 7, 28), account,
           category);
 
-      account.applyTransaction(category, BigDecimal.valueOf(100.00));
+      account.applyTransaction(existingTransaction.getSignedAmount());
 
       when(transactionRepository.findById(existingTransaction.getId())).thenReturn(Optional.of(existingTransaction));
       when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
