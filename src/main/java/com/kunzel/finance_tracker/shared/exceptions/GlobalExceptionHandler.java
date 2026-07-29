@@ -3,6 +3,7 @@ package com.kunzel.finance_tracker.shared.exceptions;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -104,10 +105,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
   }
 
   @ExceptionHandler({ IllegalArgumentException.class, IllegalStateException.class })
-  public ProblemDetail handleIllegalArgumentAndState(IllegalArgumentException ex) {
+  public ProblemDetail handleIllegalArgumentAndState(RuntimeException ex) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
         HttpStatus.BAD_REQUEST, ex.getMessage());
     problemDetail.setTitle("Requisição Inválida");
+    return problemDetail;
+  }
+
+  @ExceptionHandler(DataIntegrityViolationException.class)
+  public ProblemDetail handleDataIntegrityViolation(RuntimeException ex) {
+    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+        HttpStatus.CONFLICT, ex.getMessage());
+    problemDetail.setTitle("Violação de Integridade de Dados");
     return problemDetail;
   }
 
