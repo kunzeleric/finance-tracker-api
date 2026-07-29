@@ -43,9 +43,11 @@ public class TransactionService {
     Account account = findAccountById(accountId);
     Category category = findCategoryById(categoryId);
 
-    Transaction createdTransaction = transactionRepository
-        .save(Transaction.create(description, amount, date, account, category));
+    Transaction createdTransaction = Transaction.create(description, amount, date, account, category);
+    transactionRepository.save(createdTransaction);
+
     account.applyTransaction(category, amount);
+    accountRepository.save(account);
 
     return createdTransaction;
   }

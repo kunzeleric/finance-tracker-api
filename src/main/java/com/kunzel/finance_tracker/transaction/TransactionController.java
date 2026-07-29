@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kunzel.finance_tracker.category.dtos.CategoryResponse;
-import com.kunzel.finance_tracker.category.dtos.UpdateCategoryRequest;
 import com.kunzel.finance_tracker.transaction.dtos.CreateTransactionRequest;
 import com.kunzel.finance_tracker.transaction.dtos.TransactionFilter;
 import com.kunzel.finance_tracker.transaction.dtos.TransactionResponse;

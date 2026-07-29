@@ -28,16 +28,16 @@ public class Transaction {
   private Long id;
 
   @Column(nullable = false)
-  String description;
+  private String description;
 
   @Column(nullable = false)
-  BigDecimal amount;
+  private BigDecimal amount;
 
   @Column(nullable = false)
-  LocalDate date;
+  private LocalDate date;
 
   @Column(nullable = false)
-  LocalDate creationDate;
+  private LocalDate creationDate;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "account_id", nullable = false)

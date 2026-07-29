@@ -16,7 +16,7 @@ class AccountTest {
 
   @BeforeEach
   void setup() {
-    account = Account.create("Nubank Conta Corrente", new BigDecimal(1000.00), AccountType.CHECKING);
+    account = Account.create("Nubank Conta Corrente", BigDecimal.valueOf(1000.00), AccountType.CHECKING);
   }
 
   @Nested
@@ -25,27 +25,27 @@ class AccountTest {
     @Test
     void shouldCreateAccountWithValidInitialBalance() {
       assertThat(account.getName()).isEqualTo("Nubank Conta Corrente");
-      assertThat(account.getInitialBalance()).isEqualByComparingTo(new BigDecimal(1000.00));
-      assertThat(account.getCurrentBalance()).isEqualByComparingTo(new BigDecimal(1000.00));
+      assertThat(account.getInitialBalance()).isEqualByComparingTo(BigDecimal.valueOf(1000.00));
+      assertThat(account.getCurrentBalance()).isEqualByComparingTo(BigDecimal.valueOf(1000.00));
       assertThat(account.getType()).isEqualTo(AccountType.CHECKING);
       assertThat(account.getCreationDate()).isEqualTo(LocalDate.now());
     }
 
     @Test
     void shouldThrowExceptionWhenInitialBalanceIsNegative() {
-      assertThatThrownBy(() -> Account.create("Poupança", new BigDecimal(-10.00), AccountType.SAVINGS))
+      assertThatThrownBy(() -> Account.create("Poupança", BigDecimal.valueOf(-10.00), AccountType.SAVINGS))
           .isInstanceOf(InvalidBalanceException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenNameIsEmpty() {
-      assertThatThrownBy(() -> Account.create("", new BigDecimal(10.00), AccountType.SAVINGS))
+      assertThatThrownBy(() -> Account.create("", BigDecimal.valueOf(10.00), AccountType.SAVINGS))
           .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenAccountTypeIsEmpty() {
-      assertThatThrownBy(() -> Account.create("", new BigDecimal(10.00), null))
+      assertThatThrownBy(() -> Account.create("", BigDecimal.valueOf(10.00), null))
           .isInstanceOf(IllegalArgumentException.class);
     }
   }
@@ -56,7 +56,7 @@ class AccountTest {
     @Test
     void shouldIncreaseBalanceWhenDepositingValidAmount() {
       BigDecimal initialBalance = account.getCurrentBalance();
-      BigDecimal depositedAmount = new BigDecimal(10.00);
+      BigDecimal depositedAmount = BigDecimal.valueOf(10.00);
       BigDecimal finalAmount = initialBalance.add(depositedAmount);
 
       account.deposit(depositedAmount);
@@ -65,12 +65,13 @@ class AccountTest {
 
     @Test
     void shouldThrowExceptionWhenDepositingNegativeAmount() {
-      assertThatThrownBy(() -> account.deposit(new BigDecimal(-10.00))).isInstanceOf(IllegalArgumentException.class);
+      assertThatThrownBy(() -> account.deposit(BigDecimal.valueOf(-10.00)))
+          .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenDepositingZeroAmount() {
-      assertThatThrownBy(() -> account.deposit(new BigDecimal(0.00))).isInstanceOf(IllegalArgumentException.class);
+      assertThatThrownBy(() -> account.deposit(BigDecimal.valueOf(0.00))).isInstanceOf(IllegalArgumentException.class);
     }
   }
 
@@ -80,7 +81,7 @@ class AccountTest {
     @Test
     void shouldDecreaseBalanceWhenWithdrawingValidAmount() {
       BigDecimal initialBalance = account.getCurrentBalance();
-      BigDecimal withdrawnAmount = new BigDecimal(10.00);
+      BigDecimal withdrawnAmount = BigDecimal.valueOf(10.00);
       BigDecimal finalAmount = initialBalance.subtract(withdrawnAmount);
 
       account.withdraw(withdrawnAmount);
@@ -89,12 +90,13 @@ class AccountTest {
 
     @Test
     void shouldThrowExceptionWhenWithdrawingNegativeAmount() {
-      assertThatThrownBy(() -> account.withdraw(new BigDecimal(-10.00))).isInstanceOf(IllegalArgumentException.class);
+      assertThatThrownBy(() -> account.withdraw(BigDecimal.valueOf(-10.00)))
+          .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenWithdrawingZeroAmount() {
-      assertThatThrownBy(() -> account.withdraw(new BigDecimal(0.00))).isInstanceOf(IllegalArgumentException.class);
+      assertThatThrownBy(() -> account.withdraw(BigDecimal.valueOf(0.00))).isInstanceOf(IllegalArgumentException.class);
     }
   }
 }

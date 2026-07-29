@@ -33,10 +33,11 @@ public class TransactionTest {
   class Constructor {
     @Test
     void shouldCreateTransaction() {
-      Transaction transaction = Transaction.create("Transação teste", new BigDecimal(100.00), LocalDate.now(), account,
+      Transaction transaction = Transaction.create("Transação teste", BigDecimal.valueOf(100.00), LocalDate.now(),
+          account,
           category);
 
-      assertEquals(BigDecimal.valueOf(100), transaction.getAmount());
+      assertEquals(BigDecimal.valueOf(100.00), transaction.getAmount());
       assertEquals(account, transaction.getAccount());
       assertEquals(category, transaction.getCategory());
     }
@@ -44,13 +45,14 @@ public class TransactionTest {
     @Test
     void shouldThrowExceptionWhenTransactionValueIsZero() {
       assertThatThrownBy(
-          () -> Transaction.create("Transação teste", new BigDecimal(0.00), LocalDate.now(), account, category))
+          () -> Transaction.create("Transação teste", BigDecimal.valueOf(0.00), LocalDate.now(), account, category))
           .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenTransactionDateIsEmpty() {
-      assertThatThrownBy(() -> Transaction.create("Transação teste", new BigDecimal(10.00), null, account, category))
+      assertThatThrownBy(
+          () -> Transaction.create("Transação teste", BigDecimal.valueOf(10.00), null, account, category))
           .isInstanceOf(IllegalArgumentException.class);
     }
   }
@@ -59,7 +61,8 @@ public class TransactionTest {
   class UpdateTransaction {
     @Test
     void shouldUpdateTransactionDescription() {
-      Transaction transaction = Transaction.create("Transação teste", new BigDecimal(100.00), LocalDate.now(), account,
+      Transaction transaction = Transaction.create("Transação teste", BigDecimal.valueOf(100.00), LocalDate.now(),
+          account,
           category);
 
       String transactionNewName = "Transação teste 2";
@@ -75,7 +78,8 @@ public class TransactionTest {
   class Amount {
     @Test
     void shouldReturnProperSignedAmountForIncomeTransaction() {
-      Transaction transaction = Transaction.create("Transação Income", new BigDecimal(100.00), LocalDate.now(), account,
+      Transaction transaction = Transaction.create("Transação Income", BigDecimal.valueOf(100.00), LocalDate.now(),
+          account,
           category);
 
       assertThat(transaction.getSignedAmount()).isPositive();
@@ -84,7 +88,7 @@ public class TransactionTest {
     @Test
     void shouldReturnProperSignedAmountForExpenseTransaction() {
       Category expenseCategory = Category.createCustom("Mercado", CategoryType.EXPENSE);
-      Transaction transaction = Transaction.create("Transação Expense", new BigDecimal(100.00), LocalDate.now(),
+      Transaction transaction = Transaction.create("Transação Expense", BigDecimal.valueOf(100.00), LocalDate.now(),
           account,
           expenseCategory);
 
