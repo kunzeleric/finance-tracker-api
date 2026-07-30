@@ -3,38 +3,22 @@ package com.kunzel.finance_tracker.category;
 import org.springframework.test.util.ReflectionTestUtils;
 
 public class CategoryTestFixtures {
-  public static Category customExpenseCategory() {
-    return Category.createCustom("Alimentação", CategoryType.EXPENSE);
+  public static Category customCategory() {
+    return Category.createCustom("Categoria Customizada");
   }
 
-  public static Category customIncomeCategory() {
-    return Category.createCustom("Salário", CategoryType.INCOME);
+  public static Category defaultCategory() {
+    return Category.createDefault("Categoria Padrão");
   }
 
-  public static Category defaultIncomeCategory() {
-    return Category.createDefault("Freelance", CategoryType.INCOME);
-  }
-
-  public static Category defaultExpenseCategory() {
-    return Category.createDefault("Aluguel", CategoryType.EXPENSE);
-  }
-
-  public static Category incomeWithId(Long id) {
-    return withId(id, "Categoria Income Teste", CategoryType.INCOME);
-  }
-
-  public static Category expenseWithId(Long id) {
-    return withId(id, "Categoria Expense Teste", CategoryType.EXPENSE);
-  }
-
-  public static Category withId(Long id, String name, CategoryType type) {
-    Category category = Category.createCustom(name, type);
+  public static Category withId(Long id, String name) {
+    Category category = Category.createCustom(name);
     ReflectionTestUtils.setField(category, "id", id);
     return category;
   }
 
-  public static Category defaultWithId(Long id, String name, CategoryType type) {
-    Category category = Category.createDefault(name, type);
+  public static Category defaultWithId(Long id, String name) {
+    Category category = Category.createDefault(name);
     ReflectionTestUtils.setField(category, "id", id);
     return category;
   }
