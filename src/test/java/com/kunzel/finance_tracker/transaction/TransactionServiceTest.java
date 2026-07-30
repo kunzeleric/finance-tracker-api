@@ -47,6 +47,23 @@ public class TransactionServiceTest {
         @InjectMocks
         private TransactionService transactionService;
 
+        private void givenAccountExists(Account account) {
+                when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
+        }
+
+        private void givenCategoryExists(Category category) {
+                when(categoryRepository.findById(category.getId())).thenReturn(Optional.of(category));
+        }
+
+        private void givenTransactionExists(Transaction transaction) {
+                when(transactionRepository.findByIdWithRelations(transaction.getId()))
+                                .thenReturn(Optional.of(transaction));
+        }
+
+        private void givenTransactionSaveReturnsArgument() {
+                when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
+        }
+
         @Nested
         class Get {
 
@@ -91,8 +108,7 @@ public class TransactionServiceTest {
                                         AccountTestFixtures.defaultAccount(),
                                         CategoryTestFixtures.customExpenseCategory());
 
-                        when(transactionRepository.findByIdWithRelations(existing.getId()))
-                                        .thenReturn(Optional.of(existing));
+                        givenTransactionExists(existing);
 
                         Transaction found = transactionService.getTransactionById(existing.getId());
 
@@ -117,13 +133,12 @@ public class TransactionServiceTest {
         class Create {
                 @Test
                 void shouldCreateTransactionWithValidParameters() {
-                        Account account = AccountTestFixtures.withId(1L, "Conta Teste", BigDecimal.valueOf(1000.00),
-                                        AccountType.SAVINGS);
-                        Category category = CategoryTestFixtures.withId(1L, "Categoria Teste", CategoryType.INCOME);
+                        Account account = AccountTestFixtures.savingsWithId(1L, BigDecimal.valueOf(1000.00));
+                        Category category = CategoryTestFixtures.incomeWithId(1L);
 
-                        when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
-                        when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
-                        when(categoryRepository.findById(category.getId())).thenReturn(Optional.of(category));
+                        givenAccountExists(account);
+                        givenCategoryExists(category);
+                        givenTransactionSaveReturnsArgument();
 
                         Transaction createdTransaction = transactionService.createTransaction("Transação Teste",
                                         BigDecimal.valueOf(100.00), LocalDate.of(2026, 7, 28), account.getId(),
@@ -138,14 +153,12 @@ public class TransactionServiceTest {
 
                 @Test
                 void shouldIncreaseBalanceFromAccountWhenCreatingIncomeCategoryTransaction() {
-                        Account account = AccountTestFixtures.withId(1L, "Conta Teste", BigDecimal.valueOf(1000.00),
-                                        AccountType.SAVINGS);
-                        Category category = CategoryTestFixtures.withId(1L, "Categoria Income Teste",
-                                        CategoryType.INCOME);
+                        Account account = AccountTestFixtures.savingsWithId(1L, BigDecimal.valueOf(1000.00));
+                        Category category = CategoryTestFixtures.incomeWithId(1L);
 
-                        when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
-                        when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
-                        when(categoryRepository.findById(category.getId())).thenReturn(Optional.of(category));
+                        givenAccountExists(account);
+                        givenCategoryExists(category);
+                        givenTransactionSaveReturnsArgument();
 
                         transactionService.createTransaction("Transação Income",
                                         BigDecimal.valueOf(100.00), LocalDate.of(2026, 7, 28), account.getId(),
@@ -158,14 +171,12 @@ public class TransactionServiceTest {
 
                 @Test
                 void shouldDecreaseBalanceFromAccountWhenCreatingExpenseCategoryTransaction() {
-                        Account account = AccountTestFixtures.withId(1L, "Conta Teste", BigDecimal.valueOf(1000.00),
-                                        AccountType.SAVINGS);
-                        Category category = CategoryTestFixtures.withId(1L, "Categoria Expense Teste",
-                                        CategoryType.EXPENSE);
+                        Account account = AccountTestFixtures.savingsWithId(1L, BigDecimal.valueOf(1000.00));
+                        Category category = CategoryTestFixtures.expenseWithId(1L);
 
-                        when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
-                        when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
-                        when(categoryRepository.findById(category.getId())).thenReturn(Optional.of(category));
+                        givenAccountExists(account);
+                        givenCategoryExists(category);
+                        givenTransactionSaveReturnsArgument();
 
                         transactionService.createTransaction("Transação Expense",
                                         BigDecimal.valueOf(100.00), LocalDate.of(2026, 7, 28), account.getId(),
@@ -178,7 +189,7 @@ public class TransactionServiceTest {
 
                 @Test
                 void shouldThrowExceptionWhenCreatingTransactionWithInexistentAccount() {
-                        Category category = CategoryTestFixtures.withId(1L, "Categoria Teste", CategoryType.INCOME);
+                        Category category = CategoryTestFixtures.incomeWithId(1L);
                         Long invalidAccountId = 2L;
 
                         when(accountRepository.findById(invalidAccountId)).thenReturn(Optional.empty());
@@ -192,11 +203,10 @@ public class TransactionServiceTest {
 
                 @Test
                 void shouldThrowExceptionWhenCreatingTransactionWithInexistentCategory() {
-                        Account account = AccountTestFixtures.withId(1L, "Conta Teste", BigDecimal.valueOf(1000.00),
-                                        AccountType.SAVINGS);
+                        Account account = AccountTestFixtures.savingsWithId(1L, BigDecimal.valueOf(1000.00));
                         Long invalidCategoryId = 2L;
 
-                        when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
+                        givenAccountExists(account);
                         when(categoryRepository.findById(invalidCategoryId)).thenReturn(Optional.empty());
 
                         assertThatThrownBy(() -> transactionService.createTransaction("Transação Teste",
@@ -216,8 +226,7 @@ public class TransactionServiceTest {
                                         AccountTestFixtures.defaultAccount(),
                                         CategoryTestFixtures.defaultIncomeCategory());
 
-                        when(transactionRepository.findByIdWithRelations(existingTransaction.getId()))
-                                        .thenReturn(Optional.of(existingTransaction));
+                        givenTransactionExists(existingTransaction);
 
                         transactionService.removeTransaction(existingTransaction.getId());
 
@@ -228,9 +237,7 @@ public class TransactionServiceTest {
 
                 @Test
                 void shouldRecalculateAccountBalanceWhenDeletingIncomeTransaction() {
-                        Account account = AccountTestFixtures.withId(1L, "Conta Poupança Teste",
-                                        BigDecimal.valueOf(1000.00),
-                                        AccountType.SAVINGS);
+                        Account account = AccountTestFixtures.savingsWithId(1L, BigDecimal.valueOf(1000.00));
                         Category category = CategoryTestFixtures.defaultIncomeCategory();
 
                         Transaction existingTransaction = TransactionTestFixtures.withId(1L, "Transação Income",
@@ -239,8 +246,7 @@ public class TransactionServiceTest {
 
                         account.applyTransaction(existingTransaction.getSignedAmount());
 
-                        when(transactionRepository.findByIdWithRelations(existingTransaction.getId()))
-                                        .thenReturn(Optional.of(existingTransaction));
+                        givenTransactionExists(existingTransaction);
 
                         transactionService.removeTransaction(existingTransaction.getId());
 
@@ -253,9 +259,7 @@ public class TransactionServiceTest {
 
                 @Test
                 void shouldRecalculateAccountBalanceWhenDeletingExpenseTransaction() {
-                        Account account = AccountTestFixtures.withId(1L, "Conta Poupança Teste",
-                                        BigDecimal.valueOf(1000.00),
-                                        AccountType.SAVINGS);
+                        Account account = AccountTestFixtures.savingsWithId(1L, BigDecimal.valueOf(1000.00));
                         Category category = CategoryTestFixtures.defaultExpenseCategory();
 
                         Transaction existingTransaction = TransactionTestFixtures.withId(1L, "Transação Expense",
@@ -264,8 +268,7 @@ public class TransactionServiceTest {
 
                         account.applyTransaction(existingTransaction.getSignedAmount());
 
-                        when(transactionRepository.findByIdWithRelations(existingTransaction.getId()))
-                                        .thenReturn(Optional.of(existingTransaction));
+                        givenTransactionExists(existingTransaction);
 
                         transactionService.removeTransaction(existingTransaction.getId());
 
@@ -296,21 +299,18 @@ public class TransactionServiceTest {
 
                 @Test
                 void shouldUpdateTransactionWithValidParameters() {
-                        Account account = AccountTestFixtures.withId(1L, "Conta Teste", BigDecimal.valueOf(1000.00),
-                                        AccountType.SAVINGS);
-                        Category category = CategoryTestFixtures.withId(1L, "Categoria Income Teste",
-                                        CategoryType.INCOME);
+                        Account account = AccountTestFixtures.savingsWithId(1L, BigDecimal.valueOf(1000.00));
+                        Category category = CategoryTestFixtures.incomeWithId(1L);
 
                         Transaction existingTransaction = TransactionTestFixtures.withId(1L, "Transação Teste",
                                         BigDecimal.valueOf(100.00), LocalDate.of(2026, 7, 28), account,
                                         category);
 
-                        when(transactionRepository.findByIdWithRelations(existingTransaction.getId()))
-                                        .thenReturn(Optional.of(existingTransaction));
-                        when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
-                        when(categoryRepository.findById(category.getId())).thenReturn(Optional.of(category));
+                        givenTransactionExists(existingTransaction);
+                        givenAccountExists(account);
+                        givenCategoryExists(category);
+                        givenTransactionSaveReturnsArgument();
 
-                        when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
                         Transaction existingTransactionUpdated = transactionService.updateTransaction(
                                         existingTransaction.getId(),
                                         "Transação Teste Novo", BigDecimal.valueOf(150.00),
@@ -327,10 +327,8 @@ public class TransactionServiceTest {
 
                 @Test
                 void shouldRecalculateAccountBalanceWhenUpdatingIncomeTransaction() {
-                        Account account = AccountTestFixtures.withId(1L, "Conta Teste", BigDecimal.valueOf(1000.00),
-                                        AccountType.SAVINGS);
-                        Category category = CategoryTestFixtures.withId(1L, "Categoria Income Teste",
-                                        CategoryType.INCOME);
+                        Account account = AccountTestFixtures.savingsWithId(1L, BigDecimal.valueOf(1000.00));
+                        Category category = CategoryTestFixtures.incomeWithId(1L);
 
                         Transaction existingTransaction = TransactionTestFixtures.withId(1L, "Transação Income",
                                         BigDecimal.valueOf(100.00), LocalDate.of(2026, 7, 28), account,
@@ -338,11 +336,10 @@ public class TransactionServiceTest {
 
                         account.applyTransaction(existingTransaction.getSignedAmount());
 
-                        when(transactionRepository.findByIdWithRelations(existingTransaction.getId()))
-                                        .thenReturn(Optional.of(existingTransaction));
-                        when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
-                        when(categoryRepository.findById(category.getId())).thenReturn(Optional.of(category));
-                        when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
+                        givenTransactionExists(existingTransaction);
+                        givenAccountExists(account);
+                        givenCategoryExists(category);
+                        givenTransactionSaveReturnsArgument();
 
                         transactionService.updateTransaction(existingTransaction.getId(),
                                         "Transação Teste Novo", BigDecimal.valueOf(150.00),
@@ -360,10 +357,8 @@ public class TransactionServiceTest {
 
                 @Test
                 void shouldRecalculateAccountBalanceWhenUpdatingExpenseTransaction() {
-                        Account account = AccountTestFixtures.withId(1L, "Conta Teste", BigDecimal.valueOf(1000.00),
-                                        AccountType.SAVINGS);
-                        Category category = CategoryTestFixtures.withId(1L, "Categoria Expense Teste",
-                                        CategoryType.EXPENSE);
+                        Account account = AccountTestFixtures.savingsWithId(1L, BigDecimal.valueOf(1000.00));
+                        Category category = CategoryTestFixtures.expenseWithId(1L);
 
                         Transaction existingTransaction = TransactionTestFixtures.withId(1L, "Transação Expense",
                                         BigDecimal.valueOf(100.00), LocalDate.of(2026, 7, 28), account,
@@ -371,12 +366,11 @@ public class TransactionServiceTest {
 
                         account.applyTransaction(existingTransaction.getSignedAmount());
 
-                        when(transactionRepository.findByIdWithRelations(existingTransaction.getId()))
-                                        .thenReturn(Optional.of(existingTransaction));
-                        when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
-                        when(categoryRepository.findById(category.getId())).thenReturn(Optional.of(category));
+                        givenTransactionExists(existingTransaction);
+                        givenAccountExists(account);
+                        givenCategoryExists(category);
+                        givenTransactionSaveReturnsArgument();
 
-                        when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
                         transactionService.updateTransaction(existingTransaction.getId(),
                                         "Transação Teste Novo", BigDecimal.valueOf(150.00),
                                         existingTransaction.getDate(),
@@ -393,18 +387,15 @@ public class TransactionServiceTest {
 
                 @Test
                 void shouldThrowExceptionWhenUpdatingTransactionWithEmptyName() {
-                        Account account = AccountTestFixtures.withId(1L, "Conta Teste", BigDecimal.valueOf(1000.00),
-                                        AccountType.SAVINGS);
-                        Category category = CategoryTestFixtures.withId(1L, "Categoria Income Teste",
-                                        CategoryType.INCOME);
+                        Account account = AccountTestFixtures.savingsWithId(1L, BigDecimal.valueOf(1000.00));
+                        Category category = CategoryTestFixtures.incomeWithId(1L);
 
                         Transaction existingTransaction = TransactionTestFixtures.withId(1L, "Transação Teste",
                                         BigDecimal.valueOf(100.00), LocalDate.of(2026, 7, 28), account, category);
 
-                        when(transactionRepository.findByIdWithRelations(existingTransaction.getId()))
-                                        .thenReturn(Optional.of(existingTransaction));
-                        when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
-                        when(categoryRepository.findById(category.getId())).thenReturn(Optional.of(category));
+                        givenTransactionExists(existingTransaction);
+                        givenAccountExists(account);
+                        givenCategoryExists(category);
 
                         assertThatThrownBy(() -> transactionService.updateTransaction(existingTransaction.getId(), "",
                                         existingTransaction.getAmount(), existingTransaction.getDate(), account.getId(),
@@ -417,18 +408,15 @@ public class TransactionServiceTest {
 
                 @Test
                 void shouldThrowExceptionWhenUpdatingTransactionWithNegativeAmount() {
-                        Account account = AccountTestFixtures.withId(1L, "Conta Teste", BigDecimal.valueOf(1000.00),
-                                        AccountType.SAVINGS);
-                        Category category = CategoryTestFixtures.withId(1L, "Categoria Income Teste",
-                                        CategoryType.INCOME);
+                        Account account = AccountTestFixtures.savingsWithId(1L, BigDecimal.valueOf(1000.00));
+                        Category category = CategoryTestFixtures.incomeWithId(1L);
 
                         Transaction existingTransaction = TransactionTestFixtures.withId(1L, "Transação Teste",
                                         BigDecimal.valueOf(100.00), LocalDate.of(2026, 7, 28), account, category);
 
-                        when(transactionRepository.findByIdWithRelations(existingTransaction.getId()))
-                                        .thenReturn(Optional.of(existingTransaction));
-                        when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
-                        when(categoryRepository.findById(category.getId())).thenReturn(Optional.of(category));
+                        givenTransactionExists(existingTransaction);
+                        givenAccountExists(account);
+                        givenCategoryExists(category);
 
                         assertThatThrownBy(() -> transactionService.updateTransaction(existingTransaction.getId(),
                                         "Transação Teste",
@@ -453,7 +441,7 @@ public class TransactionServiceTest {
                 }
 
                 /** repo mockado que atribui id no save */
-                private void stubTransactionSaveAssigningId() {
+                private void givenTransactionSaveAssignsId() {
                         AtomicLong sequence = new AtomicLong(1);
                         when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> {
                                 Transaction transaction = inv.getArgument(0);
@@ -471,10 +459,10 @@ public class TransactionServiceTest {
                         Category income = CategoryTestFixtures.withId(1L, "Salário", CategoryType.INCOME);
                         Category expense = CategoryTestFixtures.withId(2L, "Mercado", CategoryType.EXPENSE);
 
-                        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
-                        when(categoryRepository.findById(1L)).thenReturn(Optional.of(income));
-                        when(categoryRepository.findById(2L)).thenReturn(Optional.of(expense));
-                        stubTransactionSaveAssigningId();
+                        givenAccountExists(account);
+                        givenCategoryExists(income);
+                        givenCategoryExists(expense);
+                        givenTransactionSaveAssignsId();
 
                         Transaction salary = transactionService.createTransaction("Salário mensal",
                                         BigDecimal.valueOf(4500.00),
@@ -485,9 +473,8 @@ public class TransactionServiceTest {
                         Transaction rent = transactionService.createTransaction("Aluguel", BigDecimal.valueOf(1500.00),
                                         LocalDate.of(2026, 7, 1), 1L, 2L);
 
-                        when(transactionRepository.findByIdWithRelations(market.getId()))
-                                        .thenReturn(Optional.of(market));
-                        when(transactionRepository.findByIdWithRelations(rent.getId())).thenReturn(Optional.of(rent));
+                        givenTransactionExists(market);
+                        givenTransactionExists(rent);
 
                         transactionService.updateTransaction(market.getId(), "Reembolso mercado",
                                         BigDecimal.valueOf(400.00),
@@ -509,15 +496,15 @@ public class TransactionServiceTest {
                                         AccountType.SAVINGS);
                         Category expense = CategoryTestFixtures.withId(1L, "Transporte", CategoryType.EXPENSE);
 
-                        when(accountRepository.findById(1L)).thenReturn(Optional.of(origin));
-                        when(accountRepository.findById(2L)).thenReturn(Optional.of(destination));
-                        when(categoryRepository.findById(1L)).thenReturn(Optional.of(expense));
-                        stubTransactionSaveAssigningId();
+                        givenAccountExists(origin);
+                        givenAccountExists(destination);
+                        givenCategoryExists(expense);
+                        givenTransactionSaveAssignsId();
 
                         Transaction moved = transactionService.createTransaction("Gasolina", BigDecimal.valueOf(200.00),
                                         LocalDate.of(2026, 7, 15), 1L, 1L);
 
-                        when(transactionRepository.findByIdWithRelations(moved.getId())).thenReturn(Optional.of(moved));
+                        givenTransactionExists(moved);
 
                         transactionService.updateTransaction(moved.getId(), moved.getDescription(), moved.getAmount(),
                                         moved.getDate(),

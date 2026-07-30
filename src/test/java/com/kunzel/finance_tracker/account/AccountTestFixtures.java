@@ -9,6 +9,10 @@ public class AccountTestFixtures {
     return Account.create("Conta teste", BigDecimal.ZERO, AccountType.SAVINGS);
   }
 
+  public static Account savingsWithId(Long id, BigDecimal initialBalance) {
+    return withId(id, "Conta Teste", initialBalance, AccountType.SAVINGS);
+  }
+
   public static Account withId(Long id, String name, BigDecimal initialBalance, AccountType type) {
     Account account = Account.create(name, initialBalance, type);
     ReflectionTestUtils.setField(account, "id", id);

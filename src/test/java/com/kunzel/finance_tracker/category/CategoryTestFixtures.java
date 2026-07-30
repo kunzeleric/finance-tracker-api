@@ -19,6 +19,14 @@ public class CategoryTestFixtures {
     return Category.createDefault("Aluguel", CategoryType.EXPENSE);
   }
 
+  public static Category incomeWithId(Long id) {
+    return withId(id, "Categoria Income Teste", CategoryType.INCOME);
+  }
+
+  public static Category expenseWithId(Long id) {
+    return withId(id, "Categoria Expense Teste", CategoryType.EXPENSE);
+  }
+
   public static Category withId(Long id, String name, CategoryType type) {
     Category category = Category.createCustom(name, type);
     ReflectionTestUtils.setField(category, "id", id);
