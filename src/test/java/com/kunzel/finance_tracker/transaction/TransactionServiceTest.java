@@ -73,7 +73,7 @@ public class TransactionServiceTest {
                                         BigDecimal.valueOf(10.00),
                                         LocalDate.of(2026, 7, 27), AccountTestFixtures.defaultAccount(),
                                         CategoryTestFixtures.customExpenseCategory());
-                        Transaction transaction2 = TransactionTestFixtures.withId(1L, "Compra 2",
+                        Transaction transaction2 = TransactionTestFixtures.withId(2L, "Compra 2",
                                         BigDecimal.valueOf(30.00),
                                         LocalDate.of(2026, 7, 27), AccountTestFixtures.defaultAccount(),
                                         CategoryTestFixtures.customExpenseCategory());

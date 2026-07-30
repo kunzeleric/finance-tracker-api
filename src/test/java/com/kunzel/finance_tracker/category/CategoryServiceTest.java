@@ -33,6 +33,31 @@ class CategoryServiceTest {
   @InjectMocks
   private CategoryService categoryService;
 
+  private void givenCategoryExists(Category category) {
+    when(categoryRepository.findById(category.getId())).thenReturn(Optional.of(category));
+  }
+
+  private void givenCategorySaveReturnsArgument() {
+    when(categoryRepository.save(any(Category.class))).thenAnswer(inv -> inv.getArgument(0));
+  }
+
+  private void givenNameAndTypeAvailable(String name, CategoryType type) {
+    when(categoryRepository.findExistingCategoryByNameAndType(name, type)).thenReturn(Optional.empty());
+  }
+
+  private void givenNameAndTypeTakenBy(Category categoryOwner) {
+    when(categoryRepository.findExistingCategoryByNameAndType(categoryOwner.getName(), categoryOwner.getType()))
+        .thenReturn(Optional.of(categoryOwner));
+  }
+
+  private void givenCategoryHasTransactions(Long categoryId) {
+    when(transactionRepository.existsByCategoryId(categoryId)).thenReturn(true);
+  }
+
+  private void givenCategoryHasNoTransactions(Long categoryId) {
+    when(transactionRepository.existsByCategoryId(categoryId)).thenReturn(false);
+  }
+
   @Nested
   class Create {
     @Test
@@ -42,8 +67,7 @@ class CategoryServiceTest {
       // getId()).
       Category existingCategory = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
 
-      when(categoryRepository.findExistingCategoryByNameAndType("Alimentação", CategoryType.EXPENSE))
-          .thenReturn(Optional.of(existingCategory));
+      givenNameAndTypeTakenBy(existingCategory);
 
       // ACT + ASSERT — service deve barrar a duplicata.
       assertThatThrownBy(() -> categoryService.createCategory("Alimentação", CategoryType.EXPENSE))
@@ -55,10 +79,9 @@ class CategoryServiceTest {
 
     @Test
     void shouldCreateCustomCategoryWhenNameAndTypeAreAvailable() {
-      when(categoryRepository.findExistingCategoryByNameAndType("Natação", CategoryType.EXPENSE))
-          .thenReturn(Optional.empty());
+      givenNameAndTypeAvailable("Natação", CategoryType.EXPENSE);
 
-      when(categoryRepository.save(any(Category.class))).thenAnswer(inv -> inv.getArgument(0));
+      givenCategorySaveReturnsArgument();
 
       Category category = categoryService.createCategory("Natação", CategoryType.EXPENSE);
 
@@ -71,10 +94,9 @@ class CategoryServiceTest {
 
     @Test
     void shouldCreateDefaultCategoryWhenNameAndTypeAreAvailable() {
-      when(categoryRepository.findExistingCategoryByNameAndType("Salário", CategoryType.INCOME))
-          .thenReturn(Optional.empty());
+      givenNameAndTypeAvailable("Salário", CategoryType.INCOME);
 
-      when(categoryRepository.save(any(Category.class))).thenAnswer(inv -> inv.getArgument(0));
+      givenCategorySaveReturnsArgument();
 
       Category category = categoryService.createDefaultCategory("Salário", CategoryType.INCOME);
 
@@ -93,11 +115,8 @@ class CategoryServiceTest {
     void shouldRemoveExistingCategory() {
       Category existingCategory = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
 
-      // confirma que categoria existe
-      when(categoryRepository.findById(existingCategory.getId()))
-          .thenReturn(Optional.of(existingCategory));
-      // categoria sem lançamentos → remoção liberada
-      when(transactionRepository.existsByCategoryId(existingCategory.getId())).thenReturn(false);
+      givenCategoryExists(existingCategory);
+      givenCategoryHasNoTransactions(existingCategory.getId());
 
       categoryService.removeCategory(existingCategory.getId());
 
@@ -109,8 +128,8 @@ class CategoryServiceTest {
     void shouldThrowExceptionWhenRemovingCategoryWithTransactions() {
       Category categoryWithTransactions = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
 
-      when(categoryRepository.findById(1L)).thenReturn(Optional.of(categoryWithTransactions));
-      when(transactionRepository.existsByCategoryId(1L)).thenReturn(true);
+      givenCategoryExists(categoryWithTransactions);
+      givenCategoryHasTransactions(1L);
 
       assertThatThrownBy(() -> categoryService.removeCategory(1L))
           .isInstanceOf(IllegalStateException.class);
@@ -122,7 +141,6 @@ class CategoryServiceTest {
     void shouldThrowExceptionWhenDeletingCategoryWithInvalidId() {
       Long inexistentCategoryId = 2L;
 
-      // confirma que categoria não existe
       when(categoryRepository.findById(inexistentCategoryId))
           .thenReturn(Optional.empty());
 
@@ -134,9 +152,9 @@ class CategoryServiceTest {
 
     @Test
     void shouldThrowExceptionWhenDeletingDefaultCategory() {
-      Category defaultCategory = CategoryTestFixtures.defaultIncomeCategory();
+      Category defaultCategory = CategoryTestFixtures.defaultWithId(1L, "Freelance", CategoryType.INCOME);
 
-      when(categoryRepository.findById(defaultCategory.getId())).thenReturn(Optional.of(defaultCategory));
+      givenCategoryExists(defaultCategory);
 
       assertThatThrownBy(() -> categoryService.removeCategory(defaultCategory.getId()))
           .isInstanceOf(IllegalArgumentException.class);
@@ -174,7 +192,7 @@ class CategoryServiceTest {
     void shouldGetCategoryWithValidId() {
       Category existingCategory = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
 
-      when(categoryRepository.findById(existingCategory.getId())).thenReturn(Optional.of(existingCategory));
+      givenCategoryExists(existingCategory);
 
       Category foundCategory = categoryService.getCategoryById(existingCategory.getId());
 
@@ -204,13 +222,9 @@ class CategoryServiceTest {
       Category existingCategory = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
       String newCategoryName = "Alimentação Shopping";
 
-      // espera que categoria exista
-      when(categoryRepository.findById(existingCategory.getId())).thenReturn(Optional.of(existingCategory));
-      // espera que não tenha conflito de nomes
-      when(categoryRepository.findExistingCategoryByNameAndType(newCategoryName, existingCategory.getType()))
-          .thenReturn(Optional.empty());
-      // deixa explicito o retorno do mock
-      when(categoryRepository.save(any(Category.class))).thenAnswer(inv -> inv.getArgument(0));
+      givenCategoryExists(existingCategory);
+      givenNameAndTypeAvailable(newCategoryName, existingCategory.getType());
+      givenCategorySaveReturnsArgument();
 
       Category updatedCategory = categoryService.updateCategory(existingCategory.getId(), newCategoryName,
           CategoryType.EXPENSE);
@@ -226,8 +240,8 @@ class CategoryServiceTest {
     void shouldThrowExceptionWhenUpdatingTypeOfCategoryWithTransactions() {
       Category categoryWithTransactions = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
 
-      when(categoryRepository.findById(1L)).thenReturn(Optional.of(categoryWithTransactions));
-      when(transactionRepository.existsByCategoryId(1L)).thenReturn(true);
+      givenCategoryExists(categoryWithTransactions);
+      givenCategoryHasTransactions(1L);
 
       assertThatThrownBy(() -> categoryService.updateCategory(1L, "Alimentação", CategoryType.INCOME))
           .isInstanceOf(IllegalArgumentException.class);
@@ -242,12 +256,10 @@ class CategoryServiceTest {
     void shouldUpdateTypeOfCustomCategoryWithoutTransactions() {
       Category categoryWithoutTransactions = CategoryTestFixtures.withId(1L, "Bônus", CategoryType.EXPENSE);
 
-      when(categoryRepository.findById(1L)).thenReturn(Optional.of(categoryWithoutTransactions));
-      // nenhum lançamento usa essa categoria → troca de tipo é permitida
-      when(transactionRepository.existsByCategoryId(1L)).thenReturn(false);
-      when(categoryRepository.findExistingCategoryByNameAndType("Bônus", CategoryType.INCOME))
-          .thenReturn(Optional.empty());
-      when(categoryRepository.save(any(Category.class))).thenAnswer(inv -> inv.getArgument(0));
+      givenCategoryExists(categoryWithoutTransactions);
+      givenCategoryHasNoTransactions(1L);
+      givenNameAndTypeAvailable("Bônus", CategoryType.INCOME);
+      givenCategorySaveReturnsArgument();
 
       Category updatedCategory = categoryService.updateCategory(1L, "Bônus", CategoryType.INCOME);
 
@@ -262,10 +274,9 @@ class CategoryServiceTest {
     void shouldUpdateNameOfCustomCategoryWithTransactionsWhenTypeIsUnchanged() {
       Category categoryWithTransactions = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
 
-      when(categoryRepository.findById(1L)).thenReturn(Optional.of(categoryWithTransactions));
-      when(categoryRepository.findExistingCategoryByNameAndType("Mercado", CategoryType.EXPENSE))
-          .thenReturn(Optional.empty());
-      when(categoryRepository.save(any(Category.class))).thenAnswer(inv -> inv.getArgument(0));
+      givenCategoryExists(categoryWithTransactions);
+      givenNameAndTypeAvailable("Mercado", CategoryType.EXPENSE);
+      givenCategorySaveReturnsArgument();
 
       Category updatedCategory = categoryService.updateCategory(1L, "Mercado", CategoryType.EXPENSE);
 
@@ -282,8 +293,7 @@ class CategoryServiceTest {
       Category existingDefaultCategory = CategoryTestFixtures.defaultWithId(1L, "Categoria Padrão",
           CategoryType.INCOME);
 
-      when(categoryRepository.findById(existingDefaultCategory.getId()))
-          .thenReturn(Optional.of(existingDefaultCategory));
+      givenCategoryExists(existingDefaultCategory);
 
       assertThatThrownBy(
           () -> categoryService.updateCategory(existingDefaultCategory.getId(), "Nova Categoria Padrão",
@@ -299,9 +309,8 @@ class CategoryServiceTest {
       Category regularCategory = CategoryTestFixtures.withId(1L, "Freelance", CategoryType.INCOME);
       Category categoryToBeUpdated = CategoryTestFixtures.withId(2L, "Salário", CategoryType.INCOME);
 
-      when(categoryRepository.findById(categoryToBeUpdated.getId())).thenReturn(Optional.of(categoryToBeUpdated));
-      when(categoryRepository.findExistingCategoryByNameAndType("Freelance", CategoryType.INCOME))
-          .thenReturn(Optional.of(regularCategory));
+      givenCategoryExists(categoryToBeUpdated);
+      givenNameAndTypeTakenBy(regularCategory);
 
       assertThatThrownBy(
           () -> categoryService.updateCategory(categoryToBeUpdated.getId(), "Freelance", CategoryType.INCOME))
@@ -315,11 +324,10 @@ class CategoryServiceTest {
     void shouldUpdateCustomCategoryWhenNameAndTypeBelongToItself() {
       Category categoryToBeUpdated = CategoryTestFixtures.withId(1L, "Freelance", CategoryType.INCOME);
 
-      when(categoryRepository.findById(categoryToBeUpdated.getId())).thenReturn(Optional.of(categoryToBeUpdated));
-      when(categoryRepository.findExistingCategoryByNameAndType("Freelance", CategoryType.INCOME))
-          .thenReturn(Optional.of(categoryToBeUpdated));
+      givenCategoryExists(categoryToBeUpdated);
+      givenNameAndTypeTakenBy(categoryToBeUpdated);
 
-      when(categoryRepository.save(any(Category.class))).thenAnswer(inv -> inv.getArgument(0));
+      givenCategorySaveReturnsArgument();
 
       Category sameCategoryUpdated = categoryService.updateCategory(categoryToBeUpdated.getId(), "Freelance",
           CategoryType.INCOME);
