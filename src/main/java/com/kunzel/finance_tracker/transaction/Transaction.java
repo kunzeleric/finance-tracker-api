@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.kunzel.finance_tracker.account.Account;
 import com.kunzel.finance_tracker.category.Category;
-import com.kunzel.finance_tracker.category.CategoryType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,6 +30,9 @@ public class Transaction {
   private String description;
 
   @Column(nullable = false)
+  private TransactionType type;
+
+  @Column(nullable = false)
   private BigDecimal amount;
 
   @Column(nullable = false)
@@ -52,9 +54,11 @@ public class Transaction {
   protected Transaction() {
   }
 
-  private Transaction(String description, BigDecimal amount, LocalDate date, Account account, Category category) {
-    validate(description, amount, date, account, category);
+  private Transaction(String description, TransactionType type, BigDecimal amount, LocalDate date, Account account,
+      Category category) {
+    validate(description, type, amount, date, account, category);
     this.description = description;
+    this.type = type;
     this.amount = amount;
     this.date = date;
     this.creationDate = LocalDate.now();
@@ -68,6 +72,10 @@ public class Transaction {
 
   public String getDescription() {
     return description;
+  }
+
+  public TransactionType getType() {
+    return type;
   }
 
   public BigDecimal getAmount() {
@@ -90,10 +98,15 @@ public class Transaction {
     return category;
   }
 
-  private static void validate(String description, BigDecimal amount, LocalDate date, Account account,
+  private static void validate(String description, TransactionType type, BigDecimal amount, LocalDate date,
+      Account account,
       Category category) {
     if (description == null || description.isBlank()) {
       throw new IllegalArgumentException("Descrição da transação não pode estar em branco");
+    }
+
+    if (type == null) {
+      throw new IllegalArgumentException("Tipo da transação não pode estar em branco");
     }
 
     if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
@@ -110,13 +123,15 @@ public class Transaction {
     }
   }
 
-  public static Transaction create(String description, BigDecimal amount, LocalDate date, Account account,
+  public static Transaction create(String description, TransactionType type, BigDecimal amount, LocalDate date,
+      Account account,
       Category category) {
-    return new Transaction(description, amount, date, account, category);
+    return new Transaction(description, type, amount, date, account, category);
   }
 
-  public void update(String description, BigDecimal amount, LocalDate date, Account account, Category category) {
-    validate(description, amount, date, account, category);
+  public void update(String description, TransactionType type, BigDecimal amount, LocalDate date, Account account,
+      Category category) {
+    validate(description, type, amount, date, account, category);
     this.description = description;
     this.amount = amount;
     this.date = date;
@@ -125,7 +140,7 @@ public class Transaction {
   }
 
   public BigDecimal getSignedAmount() {
-    return this.category.getType() == CategoryType.EXPENSE
+    return this.getType() == TransactionType.EXPENSE
         ? this.amount.negate()
         : this.amount;
   }

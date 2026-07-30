@@ -51,7 +51,8 @@ public class TransactionController {
 
   @PostMapping
   public ResponseEntity<TransactionResponse> createTransaction(@Valid @RequestBody CreateTransactionRequest request) {
-    Transaction createdTransaction = transactionService.createTransaction(request.description(), request.amount(),
+    Transaction createdTransaction = transactionService.createTransaction(request.description(), request.type(),
+        request.amount(),
         request.date(), request.accountId(), request.categoryId());
     return ResponseEntity.status(HttpStatus.CREATED).body(TransactionResponse.from(createdTransaction));
   }
@@ -60,6 +61,7 @@ public class TransactionController {
   public ResponseEntity<TransactionResponse> updateTransaction(@PathVariable("id") Long transactionId,
       @Valid @RequestBody UpdateTransactionRequest request) {
     Transaction updatedTransaction = transactionService.updateTransaction(transactionId, request.description(),
+        request.type(),
         request.amount(), request.date(), request.accountId(), request.categoryId());
     return ResponseEntity.ok().body(TransactionResponse.from(updatedTransaction));
   }
