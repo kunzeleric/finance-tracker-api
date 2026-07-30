@@ -1,0 +1,76 @@
+package com.kunzel.finance_tracker.category;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.kunzel.finance_tracker.shared.exceptions.NotFoundException;
+import com.kunzel.finance_tracker.transaction.TransactionRepository;
+
+@Service
+public class CategoryService {
+  private final CategoryRepository categoryRepository;
+  private final TransactionRepository transactionRepository;
+
+  public CategoryService(CategoryRepository categoryRepository, TransactionRepository transactionRepository) {
+    this.categoryRepository = categoryRepository;
+    this.transactionRepository = transactionRepository;
+  }
+
+  public Category getCategoryById(Long categoryId) {
+    return categoryRepository.findById(categoryId).orElseThrow(() -> new NotFoundException(categoryId, "CATEGORIA"));
+  }
+
+  public List<Category> getAllCategories() {
+    return categoryRepository.findAll();
+  }
+
+  public Category createCategory(String name, CategoryType type) {
+    assertNameTypeAvailable(name, type, null);
+    return categoryRepository.save(Category.createCustom(name, type));
+  }
+
+  public Category createDefaultCategory(String name, CategoryType type) {
+    assertNameTypeAvailable(name, type, null);
+    return categoryRepository.save(Category.createDefault(name, type));
+  }
+
+  public Category updateCategory(Long categoryId, String name, CategoryType type) {
+    Category categoryToUpdate = getCategoryById(categoryId);
+
+    if (categoryToUpdate.isDefault()) {
+      throw new IllegalArgumentException("Categoria padrão não pode ser atualizada");
+    }
+
+    if (categoryToUpdate.getType() != type && transactionRepository.existsByCategoryId(categoryId)) {
+      throw new IllegalArgumentException("Categoria com transações registradas não pode ter o tipo alterado.");
+    }
+
+    assertNameTypeAvailable(name, type, categoryId);
+
+    categoryToUpdate.update(name, type);
+    return categoryRepository.save(categoryToUpdate);
+  }
+
+  public void removeCategory(Long categoryId) {
+    Category categoryToRemove = getCategoryById(categoryId);
+
+    if (categoryToRemove.isDefault()) {
+      throw new IllegalArgumentException("Categoria padrão não pode ser deletada");
+    }
+
+    if (transactionRepository.existsByCategoryId(categoryId)) {
+      throw new IllegalStateException("Categoria com lançamentos registrados não pode ser removida.");
+    }
+
+    categoryRepository.delete(categoryToRemove);
+  }
+
+  private void assertNameTypeAvailable(String name, CategoryType type, Long excludeId) {
+    categoryRepository.findExistingCategoryByNameAndType(name, type)
+        .filter(existing -> !existing.getId().equals(excludeId))
+        .ifPresent(existing -> {
+          throw new IllegalArgumentException("Você não pode ter duas categorias com mesmo nome e tipo.");
+        });
+  }
+}
