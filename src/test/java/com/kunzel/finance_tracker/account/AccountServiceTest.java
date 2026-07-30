@@ -33,13 +33,38 @@ public class AccountServiceTest {
   @InjectMocks
   private AccountService accountService;
 
+  private void givenAccountExists(Account account) {
+    when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
+  }
+
+  private void givenAccountSaveReturnsArgument() {
+    when(accountRepository.save(any(Account.class))).thenAnswer(inv -> inv.getArgument(0));
+  }
+
+  private void givenNameAndTypeAvailable(String name, AccountType type) {
+    when(accountRepository.findExistingAccountByNameAndType(name, type)).thenReturn(Optional.empty());
+  }
+
+  private void givenNameAndTypeTakenBy(Account accountOwner) {
+    when(accountRepository.findExistingAccountByNameAndType(accountOwner.getName(), accountOwner.getType()))
+        .thenReturn(Optional.of(accountOwner));
+  }
+
+  private void givenAccountHasTransactions(Long accountId) {
+    when(transactionRepository.existsByAccountId(accountId)).thenReturn(true);
+  }
+
+  private void givenAccountHasNoTransactions(Long accountId) {
+    when(transactionRepository.existsByAccountId(accountId)).thenReturn(false);
+  }
+
   @Nested
   class Create {
     @Test
     void shouldCreateAccount() {
       Account account = AccountTestFixtures.defaultAccount();
 
-      when(accountRepository.save(any(Account.class))).thenAnswer(inv -> inv.getArgument(0));
+      givenAccountSaveReturnsArgument();
 
       Account createdAccount = accountService.createAccount(account.getName(), account.getInitialBalance(),
           account.getType());
@@ -63,8 +88,7 @@ public class AccountServiceTest {
       Account existingAccount = AccountTestFixtures.withId(1L, "Conta Poupança Nubank", BigDecimal.valueOf(1000.00),
           AccountType.SAVINGS);
 
-      when(accountRepository.findExistingAccountByNameAndType("Conta Poupança Nubank", AccountType.SAVINGS))
-          .thenReturn(Optional.of(existingAccount));
+      givenNameAndTypeTakenBy(existingAccount);
 
       assertThatThrownBy(
           () -> accountService.createAccount("Conta Poupança Nubank", BigDecimal.valueOf(100.00), AccountType.SAVINGS))
@@ -80,7 +104,7 @@ public class AccountServiceTest {
     @Test
     void shouldReturnAllAccounts() {
       Account account1 = AccountTestFixtures.withId(1L, "Conta 1", BigDecimal.valueOf(100.00), AccountType.SAVINGS);
-      Account account2 = AccountTestFixtures.withId(1L, "Conta 2", BigDecimal.valueOf(300.00), AccountType.WALLET);
+      Account account2 = AccountTestFixtures.withId(2L, "Conta 2", BigDecimal.valueOf(300.00), AccountType.WALLET);
 
       when(accountRepository.findAll()).thenReturn(List.of(account1, account2));
 
@@ -105,7 +129,7 @@ public class AccountServiceTest {
       Account existingAccount = AccountTestFixtures.withId(1L, "Conta Teste", BigDecimal.valueOf(100.00),
           AccountType.SAVINGS);
 
-      when(accountRepository.findById(existingAccount.getId())).thenReturn(Optional.of(existingAccount));
+      givenAccountExists(existingAccount);
 
       Account foundAccount = accountService.getAccountById(existingAccount.getId());
 
@@ -135,10 +159,9 @@ public class AccountServiceTest {
           AccountType.SAVINGS);
       String newAccountName = "Conta Nova";
 
-      when(accountRepository.findById(existingAccount.getId())).thenReturn(Optional.of(existingAccount));
-      when(accountRepository.findExistingAccountByNameAndType(newAccountName, existingAccount.getType()))
-          .thenReturn(Optional.empty());
-      when(accountRepository.save(any(Account.class))).thenAnswer(inv -> inv.getArgument(0));
+      givenAccountExists(existingAccount);
+      givenNameAndTypeAvailable(newAccountName, existingAccount.getType());
+      givenAccountSaveReturnsArgument();
 
       Account updatedAccount = accountService.updateAccount(existingAccount.getId(), newAccountName,
           AccountType.SAVINGS);
@@ -155,11 +178,9 @@ public class AccountServiceTest {
       Account accountToBeUpdated = AccountTestFixtures.withId(1L, "Conta Teste", BigDecimal.valueOf(100.00),
           AccountType.SAVINGS);
 
-      when(accountRepository.findById(accountToBeUpdated.getId())).thenReturn(Optional.of(accountToBeUpdated));
-      when(accountRepository.findExistingAccountByNameAndType(accountToBeUpdated.getName(),
-          accountToBeUpdated.getType()))
-          .thenReturn(Optional.of(accountToBeUpdated));
-      when(accountRepository.save(any(Account.class))).thenAnswer(inv -> inv.getArgument(0));
+      givenAccountExists(accountToBeUpdated);
+      givenNameAndTypeTakenBy(accountToBeUpdated);
+      givenAccountSaveReturnsArgument();
 
       Account sameAccountUpdated = accountService.updateAccount(accountToBeUpdated.getId(), "Conta Teste",
           AccountType.SAVINGS);
@@ -177,9 +198,8 @@ public class AccountServiceTest {
       Account accountToBeUpdated = AccountTestFixtures.withId(2L, "Conta Teste 2", BigDecimal.valueOf(100.00),
           AccountType.CHECKING);
 
-      when(accountRepository.findById(accountToBeUpdated.getId())).thenReturn(Optional.of(accountToBeUpdated));
-      when(accountRepository.findExistingAccountByNameAndType("Conta Teste", AccountType.SAVINGS))
-          .thenReturn(Optional.of(regularAccount));
+      givenAccountExists(accountToBeUpdated);
+      givenNameAndTypeTakenBy(regularAccount);
 
       assertThatThrownBy(
           () -> accountService.updateAccount(accountToBeUpdated.getId(), "Conta Teste", AccountType.SAVINGS))
@@ -199,9 +219,8 @@ public class AccountServiceTest {
       Account existingAccount = AccountTestFixtures.withId(1L, "Conta Teste", BigDecimal.valueOf(100.00),
           AccountType.INVESTMENT);
 
-      when(accountRepository.findById(existingAccount.getId())).thenReturn(Optional.of(existingAccount));
-      // conta sem lançamentos → remoção liberada
-      when(transactionRepository.existsByAccountId(existingAccount.getId())).thenReturn(false);
+      givenAccountExists(existingAccount);
+      givenAccountHasNoTransactions(existingAccount.getId());
 
       accountService.removeAccount(existingAccount.getId());
 
@@ -214,8 +233,8 @@ public class AccountServiceTest {
       Account accountWithTransactions = AccountTestFixtures.withId(1L, "Conta Teste", BigDecimal.valueOf(100.00),
           AccountType.INVESTMENT);
 
-      when(accountRepository.findById(1L)).thenReturn(Optional.of(accountWithTransactions));
-      when(transactionRepository.existsByAccountId(1L)).thenReturn(true);
+      givenAccountExists(accountWithTransactions);
+      givenAccountHasTransactions(1L);
 
       assertThatThrownBy(() -> accountService.removeAccount(1L))
           .isInstanceOf(IllegalStateException.class);
@@ -240,7 +259,7 @@ public class AccountServiceTest {
     @Test
     void shouldReturnAccountsTotalBalance() {
       Account account1 = AccountTestFixtures.withId(1L, "Conta 1", BigDecimal.valueOf(100.00), AccountType.SAVINGS);
-      Account account2 = AccountTestFixtures.withId(1L, "Conta 2", BigDecimal.valueOf(300.00), AccountType.WALLET);
+      Account account2 = AccountTestFixtures.withId(2L, "Conta 2", BigDecimal.valueOf(300.00), AccountType.WALLET);
 
       when(accountRepository.findAll()).thenReturn(List.of(account1, account2));
 
