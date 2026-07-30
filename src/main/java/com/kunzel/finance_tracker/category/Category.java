@@ -8,8 +8,6 @@ import com.kunzel.finance_tracker.transaction.Transaction;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -31,10 +29,6 @@ public class Category {
   @Column(nullable = false)
   private String name;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private CategoryType type;
-
   @Column(nullable = false)
   private Boolean isDefault;
 
@@ -48,17 +42,12 @@ public class Category {
   protected Category() {
   }
 
-  private Category(String name, CategoryType type, Boolean isDefault) {
+  private Category(String name, Boolean isDefault) {
     if (name == null || name.isBlank()) {
       throw new IllegalArgumentException("Nome da categoria nao pode estar em branco");
     }
 
-    if (type == null) {
-      throw new IllegalArgumentException("Tipo da categoria nao pode estar em branco");
-    }
-
     this.name = name;
-    this.type = type;
     this.isDefault = isDefault;
     this.creationDate = LocalDate.now();
   }
@@ -71,10 +60,6 @@ public class Category {
     return name;
   }
 
-  public CategoryType getType() {
-    return type;
-  }
-
   public boolean isDefault() {
     return isDefault;
   }
@@ -83,44 +68,23 @@ public class Category {
     return creationDate;
   }
 
-  public void rename(String newName) {
+  public void update(String name) {
     if (this.isDefault()) {
       throw new IllegalStateException("Categorias do sistema não podem ter alteração de nome");
     }
 
-    if (newName == null || newName.isBlank()) {
+    if (name == null || name.isBlank()) {
       throw new IllegalArgumentException("Nome de categoria não pode estar em branco");
     }
 
-    this.name = newName;
+    this.name = name;
   }
 
-  public void changeType(CategoryType type) {
-    if (this.isDefault()) {
-      throw new IllegalStateException("Categorias do sistema não podem ter alteração de tipo");
-    }
-
-    if (type == null) {
-      throw new IllegalArgumentException("Tipo de categoria não pode estar em branco");
-    }
-
-    this.type = type;
+  public static Category createDefault(String name) {
+    return new Category(name, true);
   }
 
-  public void update(String name, CategoryType type) {
-    rename(name);
-    changeType(type);
-  }
-
-  public static Category createDefault(String name, CategoryType type) {
-    return new Category(name, type, true);
-  }
-
-  public static Category createCustom(String name, CategoryType type) {
-    return new Category(name, type, false);
-  }
-
-  public boolean isExpense() {
-    return type == CategoryType.EXPENSE;
+  public static Category createCustom(String name) {
+    return new Category(name, false);
   }
 }

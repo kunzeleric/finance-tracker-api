@@ -25,30 +25,26 @@ public class CategoryService {
     return categoryRepository.findAll();
   }
 
-  public Category createCategory(String name, CategoryType type) {
-    assertNameTypeAvailable(name, type, null);
-    return categoryRepository.save(Category.createCustom(name, type));
+  public Category createCategory(String name) {
+    assertNameAvailable(name, null);
+    return categoryRepository.save(Category.createCustom(name));
   }
 
-  public Category createDefaultCategory(String name, CategoryType type) {
-    assertNameTypeAvailable(name, type, null);
-    return categoryRepository.save(Category.createDefault(name, type));
+  public Category createDefaultCategory(String name) {
+    assertNameAvailable(name, null);
+    return categoryRepository.save(Category.createDefault(name));
   }
 
-  public Category updateCategory(Long categoryId, String name, CategoryType type) {
+  public Category updateCategory(Long categoryId, String name) {
     Category categoryToUpdate = getCategoryById(categoryId);
 
     if (categoryToUpdate.isDefault()) {
       throw new IllegalArgumentException("Categoria padrão não pode ser atualizada");
     }
 
-    if (categoryToUpdate.getType() != type && transactionRepository.existsByCategoryId(categoryId)) {
-      throw new IllegalArgumentException("Categoria com transações registradas não pode ter o tipo alterado.");
-    }
+    assertNameAvailable(name, categoryId);
 
-    assertNameTypeAvailable(name, type, categoryId);
-
-    categoryToUpdate.update(name, type);
+    categoryToUpdate.update(name);
     return categoryRepository.save(categoryToUpdate);
   }
 
@@ -66,11 +62,11 @@ public class CategoryService {
     categoryRepository.delete(categoryToRemove);
   }
 
-  private void assertNameTypeAvailable(String name, CategoryType type, Long excludeId) {
-    categoryRepository.findExistingCategoryByNameAndType(name, type)
+  private void assertNameAvailable(String name, Long excludeId) {
+    categoryRepository.findExistingCategoryByName(name)
         .filter(existing -> !existing.getId().equals(excludeId))
         .ifPresent(existing -> {
-          throw new IllegalArgumentException("Você não pode ter duas categorias com mesmo nome e tipo.");
+          throw new IllegalArgumentException("Você não pode ter duas categorias com mesmo nome.");
         });
   }
 }

@@ -42,14 +42,14 @@ public class CategoryController {
 
   @PostMapping
   public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request) {
-    Category createdCategory = categoryService.createCategory(request.name(), request.type());
+    Category createdCategory = categoryService.createCategory(request.name());
     return ResponseEntity.status(HttpStatus.CREATED).body(new CategoryResponse(createdCategory));
   }
 
   @PutMapping("/{id}")
   public ResponseEntity<CategoryResponse> updateCategory(@PathVariable("id") Long categoryId,
       @Valid @RequestBody UpdateCategoryRequest request) {
-    Category updatedCategory = categoryService.updateCategory(categoryId, request.name(), request.type());
+    Category updatedCategory = categoryService.updateCategory(categoryId, request.name());
     return ResponseEntity.ok().body(new CategoryResponse(updatedCategory));
   }
 
