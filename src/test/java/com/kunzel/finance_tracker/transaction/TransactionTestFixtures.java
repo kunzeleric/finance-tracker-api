@@ -13,14 +13,15 @@ import com.kunzel.finance_tracker.category.CategoryTestFixtures;
 public class TransactionTestFixtures {
 
   public static Transaction defaultTransaction() {
-    return Transaction.create("Transação Teste", BigDecimal.valueOf(100.00), LocalDate.now(),
+    return Transaction.create("Transação Teste", TransactionType.EXPENSE, BigDecimal.valueOf(100.00),
+        LocalDate.now(),
         AccountTestFixtures.defaultAccount(),
-        CategoryTestFixtures.defaultIncomeCategory());
+        CategoryTestFixtures.defaultCategory());
   }
 
-  public static Transaction withId(Long id, String description, BigDecimal amount, LocalDate date, Account account,
-      Category category) {
-    Transaction transaction = Transaction.create(description, amount, date, account, category);
+  public static Transaction withId(Long id, String description, TransactionType type, BigDecimal amount,
+      LocalDate date, Account account, Category category) {
+    Transaction transaction = Transaction.create(description, type, amount, date, account, category);
     ReflectionTestUtils.setField(transaction, "id", id);
     return transaction;
   }

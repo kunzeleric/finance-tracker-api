@@ -9,6 +9,8 @@ import com.kunzel.finance_tracker.category.Category;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,6 +31,7 @@ public class Transaction {
   @Column(nullable = false)
   private String description;
 
+  @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private TransactionType type;
 
@@ -133,6 +136,7 @@ public class Transaction {
       Category category) {
     validate(description, type, amount, date, account, category);
     this.description = description;
+    this.type = type;
     this.amount = amount;
     this.date = date;
     this.account = account;
