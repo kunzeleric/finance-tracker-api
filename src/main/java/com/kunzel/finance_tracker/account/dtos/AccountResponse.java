@@ -7,8 +7,8 @@ import com.kunzel.finance_tracker.account.AccountType;
 
 public record AccountResponse(Long accountId, String name, AccountType type, BigDecimal initialBalance,
     BigDecimal currentBalance) {
-  public AccountResponse(Account account) {
-    this(account.getId(), account.getName(), account.getType(), account.getInitialBalance(),
+  public static AccountResponse from(Account account) {
+    return new AccountResponse(account.getId(), account.getName(), account.getType(), account.getInitialBalance(),
         account.getCurrentBalance());
   }
 }

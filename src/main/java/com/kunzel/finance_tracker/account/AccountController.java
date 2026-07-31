@@ -32,14 +32,14 @@ public class AccountController {
 
   @GetMapping
   public ResponseEntity<List<AccountResponse>> fetchAccounts() {
-    List<AccountResponse> accounts = accountService.getAllAccounts().stream().map(AccountResponse::new).toList();
+    List<AccountResponse> accounts = accountService.getAllAccounts().stream().map(AccountResponse::from).toList();
     return ResponseEntity.ok().body(accounts);
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<AccountResponse> getAccount(@PathVariable("id") Long accountId) {
     Account accountToBeFound = accountService.getAccountById(accountId);
-    return ResponseEntity.ok().body(new AccountResponse(accountToBeFound));
+    return ResponseEntity.ok().body(AccountResponse.from(accountToBeFound));
   }
 
   @GetMapping("/balance")
@@ -53,14 +53,14 @@ public class AccountController {
     Account createdAccount = accountService.createAccount(request.name(), request.initialBalance(), request.type());
     URI location = uriBuilder.path("/accounts/{id}").buildAndExpand(createdAccount.getId()).toUri();
 
-    return ResponseEntity.created(location).body(new AccountResponse(createdAccount));
+    return ResponseEntity.created(location).body(AccountResponse.from(createdAccount));
   }
 
   @PutMapping("/{id}")
   public ResponseEntity<AccountResponse> updateAccount(@PathVariable("id") Long accountId,
       @Valid @RequestBody UpdateAccountRequest request) {
     Account updatedAccount = accountService.updateAccount(accountId, request.name(), request.type());
-    return ResponseEntity.ok().body(new AccountResponse(updatedAccount));
+    return ResponseEntity.ok().body(AccountResponse.from(updatedAccount));
   }
 
   @DeleteMapping("/{id}")

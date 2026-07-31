@@ -31,14 +31,14 @@ public class CategoryController {
 
   @GetMapping
   public ResponseEntity<List<CategoryResponse>> fetchCategories() {
-    List<CategoryResponse> categories = categoryService.getAllCategories().stream().map(CategoryResponse::new).toList();
+    List<CategoryResponse> categories = categoryService.getAllCategories().stream().map(CategoryResponse::from).toList();
     return ResponseEntity.ok().body(categories);
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<CategoryResponse> getCategory(@PathVariable("id") Long categoryId) {
     Category categoryToBeFound = categoryService.getCategoryById(categoryId);
-    return ResponseEntity.ok().body(new CategoryResponse(categoryToBeFound));
+    return ResponseEntity.ok().body(CategoryResponse.from(categoryToBeFound));
   }
 
   @PostMapping
@@ -47,14 +47,14 @@ public class CategoryController {
     Category createdCategory = categoryService.createCategory(request.name());
     URI location = uriBuilder.path("/categories/{id}").buildAndExpand(createdCategory.getId()).toUri();
 
-    return ResponseEntity.created(location).body(new CategoryResponse(createdCategory));
+    return ResponseEntity.created(location).body(CategoryResponse.from(createdCategory));
   }
 
   @PutMapping("/{id}")
   public ResponseEntity<CategoryResponse> updateCategory(@PathVariable("id") Long categoryId,
       @Valid @RequestBody UpdateCategoryRequest request) {
     Category updatedCategory = categoryService.updateCategory(categoryId, request.name());
-    return ResponseEntity.ok().body(new CategoryResponse(updatedCategory));
+    return ResponseEntity.ok().body(CategoryResponse.from(updatedCategory));
   }
 
   @DeleteMapping("/{id}")

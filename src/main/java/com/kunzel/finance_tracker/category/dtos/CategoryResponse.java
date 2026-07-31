@@ -5,7 +5,7 @@ import com.kunzel.finance_tracker.category.Category;
 public record CategoryResponse(Long categoryId, String name,
     Boolean isDefault) {
 
-  public CategoryResponse(Category category) {
-    this(category.getId(), category.getName(), category.isDefault());
+  public static CategoryResponse from(Category category) {
+    return new CategoryResponse(category.getId(), category.getName(), category.isDefault());
   }
 }
