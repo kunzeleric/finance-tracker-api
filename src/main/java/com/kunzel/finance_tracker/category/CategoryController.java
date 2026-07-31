@@ -21,8 +21,10 @@ import com.kunzel.finance_tracker.category.dtos.UpdateCategoryRequest;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/categories")
+@RequestMapping(CategoryController.BASE_PATH)
 public class CategoryController {
+  static final String BASE_PATH = "/api/v1/categories";
+
   private final CategoryService categoryService;
 
   public CategoryController(CategoryService categoryService) {
@@ -45,7 +47,7 @@ public class CategoryController {
   public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request,
       UriComponentsBuilder uriBuilder) {
     Category createdCategory = categoryService.createCategory(request.name());
-    URI location = uriBuilder.path("/categories/{id}").buildAndExpand(createdCategory.getId()).toUri();
+    URI location = uriBuilder.path(BASE_PATH + "/{id}").buildAndExpand(createdCategory.getId()).toUri();
 
     return ResponseEntity.created(location).body(CategoryResponse.from(createdCategory));
   }

@@ -25,8 +25,10 @@ import com.kunzel.finance_tracker.transaction.dtos.UpdateTransactionRequest;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/transactions")
+@RequestMapping(TransactionController.BASE_PATH)
 public class TransactionController {
+  static final String BASE_PATH = "/api/v1/transactions";
+
   private final TransactionService transactionService;
 
   public TransactionController(TransactionService transactionService) {
@@ -56,7 +58,7 @@ public class TransactionController {
     Transaction createdTransaction = transactionService.createTransaction(request.description(), request.type(),
         request.amount(),
         request.date(), request.accountId(), request.categoryId());
-    URI location = uriBuilder.path("/transactions/{id}").buildAndExpand(createdTransaction.getId()).toUri();
+    URI location = uriBuilder.path(BASE_PATH + "/{id}").buildAndExpand(createdTransaction.getId()).toUri();
 
     return ResponseEntity.created(location).body(TransactionResponse.from(createdTransaction));
   }

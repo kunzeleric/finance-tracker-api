@@ -22,8 +22,10 @@ import com.kunzel.finance_tracker.account.dtos.UpdateAccountRequest;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/accounts")
+@RequestMapping(AccountController.BASE_PATH)
 public class AccountController {
+  static final String BASE_PATH = "/api/v1/accounts";
+
   private final AccountService accountService;
 
   public AccountController(AccountService accountService) {
@@ -51,7 +53,7 @@ public class AccountController {
   public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request,
       UriComponentsBuilder uriBuilder) {
     Account createdAccount = accountService.createAccount(request.name(), request.initialBalance(), request.type());
-    URI location = uriBuilder.path("/accounts/{id}").buildAndExpand(createdAccount.getId()).toUri();
+    URI location = uriBuilder.path(BASE_PATH + "/{id}").buildAndExpand(createdAccount.getId()).toUri();
 
     return ResponseEntity.created(location).body(AccountResponse.from(createdAccount));
   }
