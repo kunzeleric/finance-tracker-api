@@ -30,6 +30,7 @@ import com.kunzel.finance_tracker.category.Category;
 import com.kunzel.finance_tracker.category.CategoryRepository;
 import com.kunzel.finance_tracker.category.CategoryTestFixtures;
 import com.kunzel.finance_tracker.shared.exceptions.NotFoundException;
+import com.kunzel.finance_tracker.shared.exceptions.ValidationException;
 
 @ExtendWith(MockitoExtension.class)
 public class TransactionServiceTest {
@@ -414,7 +415,7 @@ public class TransactionServiceTest {
                                         existingTransaction.getType(), existingTransaction.getAmount(),
                                         existingTransaction.getDate(), account.getId(),
                                         category.getId()))
-                                        .isInstanceOf(IllegalArgumentException.class);
+                                        .isInstanceOf(ValidationException.class);
 
                         verify(transactionRepository).findByIdWithRelations(existingTransaction.getId());
                         verify(transactionRepository, never()).save(any());
@@ -438,7 +439,7 @@ public class TransactionServiceTest {
                                         existingTransaction.getType(), BigDecimal.valueOf(-100.00),
                                         existingTransaction.getDate(), account.getId(),
                                         category.getId()))
-                                        .isInstanceOf(IllegalArgumentException.class);
+                                        .isInstanceOf(ValidationException.class);
 
                         verify(transactionRepository).findByIdWithRelations(existingTransaction.getId());
                         verify(transactionRepository, never()).save(any());

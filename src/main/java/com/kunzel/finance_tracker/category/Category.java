@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.kunzel.finance_tracker.shared.exceptions.BusinessRuleException;
+import com.kunzel.finance_tracker.shared.exceptions.ValidationException;
 import com.kunzel.finance_tracker.transaction.Transaction;
 
 import jakarta.persistence.Column;
@@ -44,7 +46,7 @@ public class Category {
 
   private Category(String name, Boolean isDefault) {
     if (name == null || name.isBlank()) {
-      throw new IllegalArgumentException("Nome da categoria nao pode estar em branco");
+      throw new ValidationException("Nome da categoria nao pode estar em branco");
     }
 
     this.name = name;
@@ -70,11 +72,11 @@ public class Category {
 
   public void update(String name) {
     if (this.isDefault()) {
-      throw new IllegalStateException("Categorias do sistema não podem ter alteração de nome");
+      throw new BusinessRuleException("Categorias do sistema não podem ter alteração de nome");
     }
 
     if (name == null || name.isBlank()) {
-      throw new IllegalArgumentException("Nome de categoria não pode estar em branco");
+      throw new ValidationException("Nome de categoria não pode estar em branco");
     }
 
     this.name = name;

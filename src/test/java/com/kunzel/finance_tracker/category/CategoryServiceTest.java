@@ -3,7 +3,6 @@ package com.kunzel.finance_tracker.category;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.kunzel.finance_tracker.shared.exceptions.BusinessRuleException;
 import com.kunzel.finance_tracker.shared.exceptions.NotFoundException;
 import com.kunzel.finance_tracker.transaction.TransactionRepository;
 
@@ -71,14 +71,14 @@ class CategoryServiceTest {
 
       // ACT + ASSERT — service deve barrar a duplicata.
       assertThatThrownBy(() -> categoryService.createCategory("Alimentação"))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(BusinessRuleException.class);
 
       // Verifica a INTERAÇÃO: como lançou, nunca deve ter tentado salvar.
       verify(categoryRepository, never()).save(any());
     }
 
     @Test
-    void shouldCreateCustomCategoryWhenNameAreAvailable() {
+    void shouldCreateCustomCategoryWhenNameIsAvailable() {
       givenNameAvailable("Natação");
 
       givenCategorySaveReturnsArgument();
@@ -92,7 +92,7 @@ class CategoryServiceTest {
     }
 
     @Test
-    void shouldCreateDefaultCategoryWhenNameAreAvailable() {
+    void shouldCreateDefaultCategoryWhenNameIsAvailable() {
       givenNameAvailable("Salário");
 
       givenCategorySaveReturnsArgument();
@@ -130,7 +130,7 @@ class CategoryServiceTest {
       givenCategoryHasTransactions(1L);
 
       assertThatThrownBy(() -> categoryService.removeCategory(1L))
-          .isInstanceOf(IllegalStateException.class);
+          .isInstanceOf(BusinessRuleException.class);
 
       verify(categoryRepository, never()).delete(any());
     }
@@ -155,7 +155,7 @@ class CategoryServiceTest {
       givenCategoryExists(defaultCategory);
 
       assertThatThrownBy(() -> categoryService.removeCategory(defaultCategory.getId()))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(BusinessRuleException.class);
 
       verify(categoryRepository).findById(defaultCategory.getId());
       verify(categoryRepository, never()).delete(any());
@@ -240,7 +240,7 @@ class CategoryServiceTest {
 
       assertThatThrownBy(
           () -> categoryService.updateCategory(existingDefaultCategory.getId(), "Nova Categoria Padrão"))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(BusinessRuleException.class);
 
       verify(categoryRepository).findById(existingDefaultCategory.getId());
       verify(categoryRepository, never()).save(any());

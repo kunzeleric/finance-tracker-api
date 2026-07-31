@@ -2,6 +2,8 @@ package com.kunzel.finance_tracker.transaction;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
+import com.kunzel.finance_tracker.shared.exceptions.ValidationException;
+
 public enum TransactionType {
   INCOME("Receita"),
   EXPENSE("Despesa");
@@ -24,7 +26,7 @@ public enum TransactionType {
     try {
       return TransactionType.valueOf(value.trim().toUpperCase());
     } catch (IllegalArgumentException ex) {
-      throw new IllegalArgumentException(
+      throw new ValidationException(
           "Tipo de transação inválido: '" + value + "'. Valores aceitos: INCOME, EXPENSE");
     }
   }

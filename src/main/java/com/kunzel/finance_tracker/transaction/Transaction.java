@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.kunzel.finance_tracker.account.Account;
 import com.kunzel.finance_tracker.category.Category;
+import com.kunzel.finance_tracker.shared.exceptions.ValidationException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -105,24 +106,24 @@ public class Transaction {
       Account account,
       Category category) {
     if (description == null || description.isBlank()) {
-      throw new IllegalArgumentException("Descrição da transação não pode estar em branco");
+      throw new ValidationException("Descrição da transação não pode estar em branco");
     }
 
     if (type == null) {
-      throw new IllegalArgumentException("Tipo da transação não pode estar em branco");
+      throw new ValidationException("Tipo da transação não pode estar em branco");
     }
 
     if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new IllegalArgumentException("Valor da transação tem que ser positivo e maior que 0 (zero)");
+      throw new ValidationException("Valor da transação tem que ser positivo e maior que 0 (zero)");
     }
     if (date == null) {
-      throw new IllegalArgumentException("Data da transação não pode estar em branco");
+      throw new ValidationException("Data da transação não pode estar em branco");
     }
     if (account == null) {
-      throw new IllegalArgumentException("Conta da transação não pode estar em branco");
+      throw new ValidationException("Conta da transação não pode estar em branco");
     }
     if (category == null) {
-      throw new IllegalArgumentException("Categoria da transação não pode estar em branco");
+      throw new ValidationException("Categoria da transação não pode estar em branco");
     }
   }
 

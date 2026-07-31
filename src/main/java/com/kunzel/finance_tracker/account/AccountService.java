@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.kunzel.finance_tracker.shared.exceptions.BusinessRuleException;
 import com.kunzel.finance_tracker.shared.exceptions.NotFoundException;
 import com.kunzel.finance_tracker.transaction.TransactionRepository;
 
@@ -43,7 +44,7 @@ public class AccountService {
     Account found = getAccountById(accountId);
 
     if (transactionRepository.existsByAccountId(accountId)) {
-      throw new IllegalStateException("Conta com lançamentos registrados não pode ser removida.");
+      throw new BusinessRuleException("Conta com lançamentos registrados não pode ser removida.");
     }
 
     accountRepository.delete(found);
@@ -58,7 +59,7 @@ public class AccountService {
     accountRepository.findExistingAccountByNameAndType(name, type)
         .filter(existing -> !existing.getId().equals(excludeId))
         .ifPresent(existing -> {
-          throw new IllegalArgumentException("Você não pode ter duas contas com mesmo nome e tipo.");
+          throw new BusinessRuleException("Você não pode ter duas contas com mesmo nome e tipo.");
         });
   }
 

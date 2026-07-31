@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.kunzel.finance_tracker.shared.exceptions.BusinessRuleException;
 import com.kunzel.finance_tracker.shared.exceptions.NotFoundException;
 import com.kunzel.finance_tracker.transaction.TransactionRepository;
 
@@ -39,7 +40,7 @@ public class CategoryService {
     Category categoryToUpdate = getCategoryById(categoryId);
 
     if (categoryToUpdate.isDefault()) {
-      throw new IllegalArgumentException("Categoria padrão não pode ser atualizada");
+      throw new BusinessRuleException("Categoria padrão não pode ser atualizada");
     }
 
     assertNameAvailable(name, categoryId);
@@ -52,11 +53,11 @@ public class CategoryService {
     Category categoryToRemove = getCategoryById(categoryId);
 
     if (categoryToRemove.isDefault()) {
-      throw new IllegalArgumentException("Categoria padrão não pode ser deletada");
+      throw new BusinessRuleException("Categoria padrão não pode ser deletada");
     }
 
     if (transactionRepository.existsByCategoryId(categoryId)) {
-      throw new IllegalStateException("Categoria com lançamentos registrados não pode ser removida.");
+      throw new BusinessRuleException("Categoria com lançamentos registrados não pode ser removida.");
     }
 
     categoryRepository.delete(categoryToRemove);
@@ -66,7 +67,7 @@ public class CategoryService {
     categoryRepository.findExistingCategoryByName(name)
         .filter(existing -> !existing.getId().equals(excludeId))
         .ifPresent(existing -> {
-          throw new IllegalArgumentException("Você não pode ter duas categorias com mesmo nome.");
+          throw new BusinessRuleException("Você não pode ter duas categorias com mesmo nome.");
         });
   }
 }

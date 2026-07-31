@@ -15,6 +15,7 @@ import com.kunzel.finance_tracker.account.Account;
 import com.kunzel.finance_tracker.category.Category;
 import com.kunzel.finance_tracker.account.AccountTestFixtures;
 import com.kunzel.finance_tracker.category.CategoryTestFixtures;
+import com.kunzel.finance_tracker.shared.exceptions.ValidationException;
 
 public class TransactionTest {
   Category category;
@@ -46,7 +47,7 @@ public class TransactionTest {
       assertThatThrownBy(
           () -> Transaction.create("Transação teste", TransactionType.EXPENSE, BigDecimal.valueOf(0.00),
               LocalDate.now(), account, category))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(ValidationException.class);
     }
 
     @Test
@@ -54,7 +55,7 @@ public class TransactionTest {
       assertThatThrownBy(
           () -> Transaction.create("Transação teste", TransactionType.EXPENSE, BigDecimal.valueOf(10.00), null,
               account, category))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(ValidationException.class);
     }
 
     @Test
@@ -62,7 +63,7 @@ public class TransactionTest {
       assertThatThrownBy(
           () -> Transaction.create("Transação teste", null, BigDecimal.valueOf(10.00), LocalDate.now(),
               account, category))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(ValidationException.class);
     }
   }
 

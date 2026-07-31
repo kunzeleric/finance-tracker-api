@@ -6,6 +6,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import com.kunzel.finance_tracker.shared.exceptions.BusinessRuleException;
+import com.kunzel.finance_tracker.shared.exceptions.ValidationException;
+
 public class CategoryTest {
   Category category;
 
@@ -32,19 +35,19 @@ public class CategoryTest {
     @Test
     void shouldThrowExceptionWhenCustomCategoryNameIsEmpty() {
       assertThatThrownBy(() -> Category.createCustom(""))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(ValidationException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenCustomCategoryNameIsBlank() {
       assertThatThrownBy(() -> Category.createCustom("  "))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(ValidationException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenCustomCategoryNameIsNull() {
       assertThatThrownBy(() -> Category.createCustom(null))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(ValidationException.class);
     }
   }
 
@@ -63,19 +66,19 @@ public class CategoryTest {
     @Test
     void shouldThrowExceptionWhenRenamingDefaultCategory() {
       String newName = "Freelance";
-      assertThatThrownBy(() -> category.update(newName)).isInstanceOf(IllegalStateException.class);
+      assertThatThrownBy(() -> category.update(newName)).isInstanceOf(BusinessRuleException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenRenamingCustomCategoryWithNullName() {
       Category customCategory = Category.createCustom("Freelance");
-      assertThatThrownBy(() -> customCategory.update(null)).isInstanceOf(IllegalArgumentException.class);
+      assertThatThrownBy(() -> customCategory.update(null)).isInstanceOf(ValidationException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenRenamingCustomCategoryWithEmptyName() {
       Category customCategory = Category.createCustom("Freelance");
-      assertThatThrownBy(() -> customCategory.update("")).isInstanceOf(IllegalArgumentException.class);
+      assertThatThrownBy(() -> customCategory.update("")).isInstanceOf(ValidationException.class);
     }
   }
 }

@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import com.kunzel.finance_tracker.account.exceptions.InvalidBalanceException;
-
 import tools.jackson.databind.DatabindException;
 
 @RestControllerAdvice
@@ -54,7 +52,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     if (cause instanceof DatabindException jme) {
       Throwable rootCause = jme.getCause();
 
-      String message = (rootCause instanceof IllegalArgumentException && rootCause.getMessage() != null)
+      String message = (rootCause instanceof ValidationException && rootCause.getMessage() != null)
           ? rootCause.getMessage()
           : "Valor inválido no corpo da requisição.";
 
@@ -87,24 +85,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return problemDetail;
   }
 
-  @ExceptionHandler(InvalidBalanceException.class)
-  public ProblemDetail handleAccountBalanceException(RuntimeException ex) {
+  @ExceptionHandler(ValidationException.class)
+  public ProblemDetail handleValidation(ValidationException ex) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
         HttpStatus.BAD_REQUEST, ex.getMessage());
     problemDetail.setTitle("Requisição Inválida");
     return problemDetail;
   }
 
-  @ExceptionHandler(IllegalArgumentException.class)
-  public ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
-    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-        HttpStatus.BAD_REQUEST, ex.getMessage());
-    problemDetail.setTitle("Requisição Inválida");
-    return problemDetail;
-  }
-
-  @ExceptionHandler(IllegalStateException.class)
-  public ProblemDetail handleIllegalState(IllegalStateException ex) {
+  @ExceptionHandler(BusinessRuleException.class)
+  public ProblemDetail handleBusinessRule(BusinessRuleException ex) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
         HttpStatus.CONFLICT, ex.getMessage());
     problemDetail.setTitle("Operação Não Permitida");
