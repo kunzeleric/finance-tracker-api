@@ -1,9 +1,9 @@
 package com.kunzel.finance_tracker.account;
 
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.kunzel.finance_tracker.account.dtos.AccountResponse;
 import com.kunzel.finance_tracker.account.dtos.CreateAccountRequest;
@@ -47,9 +48,12 @@ public class AccountController {
   }
 
   @PostMapping
-  public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request) {
+  public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request,
+      UriComponentsBuilder uriBuilder) {
     Account createdAccount = accountService.createAccount(request.name(), request.initialBalance(), request.type());
-    return ResponseEntity.status(HttpStatus.CREATED).body(new AccountResponse(createdAccount));
+    URI location = uriBuilder.path("/accounts/{id}").buildAndExpand(createdAccount.getId()).toUri();
+
+    return ResponseEntity.created(location).body(new AccountResponse(createdAccount));
   }
 
   @PutMapping("/{id}")

@@ -1,9 +1,9 @@
 package com.kunzel.finance_tracker.transaction;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.kunzel.finance_tracker.transaction.dtos.CreateTransactionRequest;
 import com.kunzel.finance_tracker.transaction.dtos.TransactionFilter;
@@ -50,11 +51,14 @@ public class TransactionController {
   }
 
   @PostMapping
-  public ResponseEntity<TransactionResponse> createTransaction(@Valid @RequestBody CreateTransactionRequest request) {
+  public ResponseEntity<TransactionResponse> createTransaction(@Valid @RequestBody CreateTransactionRequest request,
+      UriComponentsBuilder uriBuilder) {
     Transaction createdTransaction = transactionService.createTransaction(request.description(), request.type(),
         request.amount(),
         request.date(), request.accountId(), request.categoryId());
-    return ResponseEntity.status(HttpStatus.CREATED).body(TransactionResponse.from(createdTransaction));
+    URI location = uriBuilder.path("/transactions/{id}").buildAndExpand(createdTransaction.getId()).toUri();
+
+    return ResponseEntity.created(location).body(TransactionResponse.from(createdTransaction));
   }
 
   @PutMapping("/{id}")

@@ -1,8 +1,8 @@
 package com.kunzel.finance_tracker.category;
 
+import java.net.URI;
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.kunzel.finance_tracker.category.dtos.CategoryResponse;
 import com.kunzel.finance_tracker.category.dtos.CreateCategoryRequest;
@@ -41,9 +42,12 @@ public class CategoryController {
   }
 
   @PostMapping
-  public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request) {
+  public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request,
+      UriComponentsBuilder uriBuilder) {
     Category createdCategory = categoryService.createCategory(request.name());
-    return ResponseEntity.status(HttpStatus.CREATED).body(new CategoryResponse(createdCategory));
+    URI location = uriBuilder.path("/categories/{id}").buildAndExpand(createdCategory.getId()).toUri();
+
+    return ResponseEntity.created(location).body(new CategoryResponse(createdCategory));
   }
 
   @PutMapping("/{id}")
