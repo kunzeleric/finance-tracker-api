@@ -88,7 +88,7 @@ public class Account {
 
   public void changeType(AccountType newType) {
     if (newType == null) {
-      throw new ValidationException("Tipo da conta inválido.");
+      throw new ValidationException("Tipo da conta é obrigatório");
     }
     // TODO: validar se é uma mudança permitida
     // TODO: registrar um log/auditoria da mudança
@@ -101,11 +101,11 @@ public class Account {
     }
 
     if (name == null || name.isBlank()) {
-      throw new ValidationException("Nome da conta não pode estar em branco.");
+      throw new ValidationException("Nome da conta não pode estar em branco");
     }
 
     if (type == null) {
-      throw new ValidationException("Tipo da conta inválido.");
+      throw new ValidationException("Tipo da conta é obrigatório");
     }
 
     return new Account(name, initialBalance, type);

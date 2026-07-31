@@ -44,7 +44,7 @@ public class AccountService {
     Account found = getAccountById(accountId);
 
     if (transactionRepository.existsByAccountId(accountId)) {
-      throw new BusinessRuleException("Conta com lançamentos registrados não pode ser removida.");
+      throw new BusinessRuleException("Conta com lançamentos registrados não pode ser removida");
     }
 
     accountRepository.delete(found);
@@ -59,7 +59,7 @@ public class AccountService {
     accountRepository.findExistingAccountByNameAndType(name, type)
         .filter(existing -> !existing.getId().equals(excludeId))
         .ifPresent(existing -> {
-          throw new BusinessRuleException("Você não pode ter duas contas com mesmo nome e tipo.");
+          throw new BusinessRuleException("Você não pode ter duas contas com mesmo nome e tipo");
         });
   }
 

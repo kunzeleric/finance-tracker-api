@@ -110,20 +110,20 @@ public class Transaction {
     }
 
     if (type == null) {
-      throw new ValidationException("Tipo da transação não pode estar em branco");
+      throw new ValidationException("Tipo da transação é obrigatório");
     }
 
     if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
       throw new ValidationException("Valor da transação tem que ser positivo e maior que 0 (zero)");
     }
     if (date == null) {
-      throw new ValidationException("Data da transação não pode estar em branco");
+      throw new ValidationException("Data da transação é obrigatória");
     }
     if (account == null) {
-      throw new ValidationException("Conta da transação não pode estar em branco");
+      throw new ValidationException("Conta da transação é obrigatória");
     }
     if (category == null) {
-      throw new ValidationException("Categoria da transação não pode estar em branco");
+      throw new ValidationException("Categoria da transação é obrigatória");
     }
   }
 

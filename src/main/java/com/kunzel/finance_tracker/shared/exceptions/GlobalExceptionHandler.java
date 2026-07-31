@@ -31,11 +31,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             "campo", fieldError.getField(),
             "mensagem", fieldError.getDefaultMessage() != null
                 ? fieldError.getDefaultMessage()
-                : "Valor inválido."))
+                : "Valor inválido"))
         .toList();
 
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-        HttpStatus.BAD_REQUEST, "Um ou mais campos estão inválidos.");
+        HttpStatus.BAD_REQUEST, "Um ou mais campos estão inválidos");
     problemDetail.setTitle("Requisição Inválida");
     problemDetail.setProperty("errors", errors);
 
@@ -54,7 +54,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
       String message = (rootCause instanceof ValidationException && rootCause.getMessage() != null)
           ? rootCause.getMessage()
-          : "Valor inválido no corpo da requisição.";
+          : "Valor inválido no corpo da requisição";
 
       String field = jme.getPath().stream()
           .map(DatabindException.Reference::getPropertyName)
@@ -63,7 +63,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
           .orElse("desconhecido");
 
       ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-          HttpStatus.BAD_REQUEST, "Um ou mais campos estão inválidos.");
+          HttpStatus.BAD_REQUEST, "Um ou mais campos estão inválidos");
       problemDetail.setTitle("Requisição Inválida");
       problemDetail.setProperty("errors", List.of(Map.of("campo", field, "mensagem", message)));
 
@@ -71,7 +71,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-        HttpStatus.BAD_REQUEST, "Corpo da requisição malformado.");
+        HttpStatus.BAD_REQUEST, "Corpo da requisição malformado");
     problemDetail.setTitle("Requisição Inválida");
 
     return ResponseEntity.badRequest().body(problemDetail);
@@ -104,7 +104,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
   @ExceptionHandler(DataIntegrityViolationException.class)
   public ProblemDetail handleDataIntegrityViolation(DataIntegrityViolationException ex) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-        HttpStatus.CONFLICT, "A operação viola uma restrição de integridade dos dados.");
+        HttpStatus.CONFLICT, "A operação viola uma restrição de integridade dos dados");
     problemDetail.setTitle("Conflito de Dados");
     return problemDetail;
   }
@@ -114,7 +114,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     logger.error("Erro não tratado", ex);
 
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-        HttpStatus.INTERNAL_SERVER_ERROR, "Ocorreu um erro inesperado.");
+        HttpStatus.INTERNAL_SERVER_ERROR, "Ocorreu um erro inesperado");
     problemDetail.setTitle("Erro Interno");
     return problemDetail;
   }

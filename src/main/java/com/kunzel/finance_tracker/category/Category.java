@@ -46,7 +46,7 @@ public class Category {
 
   private Category(String name, Boolean isDefault) {
     if (name == null || name.isBlank()) {
-      throw new ValidationException("Nome da categoria nao pode estar em branco");
+      throw new ValidationException("Nome da categoria não pode estar em branco");
     }
 
     this.name = name;
@@ -72,11 +72,11 @@ public class Category {
 
   public void update(String name) {
     if (this.isDefault()) {
-      throw new BusinessRuleException("Categorias do sistema não podem ter alteração de nome");
+      throw new BusinessRuleException("Categoria padrão não pode ser renomeada");
     }
 
     if (name == null || name.isBlank()) {
-      throw new ValidationException("Nome de categoria não pode estar em branco");
+      throw new ValidationException("Nome da categoria não pode estar em branco");
     }
 
     this.name = name;

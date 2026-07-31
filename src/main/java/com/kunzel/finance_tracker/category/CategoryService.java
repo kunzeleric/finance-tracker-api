@@ -57,7 +57,7 @@ public class CategoryService {
     }
 
     if (transactionRepository.existsByCategoryId(categoryId)) {
-      throw new BusinessRuleException("Categoria com lançamentos registrados não pode ser removida.");
+      throw new BusinessRuleException("Categoria com lançamentos registrados não pode ser removida");
     }
 
     categoryRepository.delete(categoryToRemove);
@@ -67,7 +67,7 @@ public class CategoryService {
     categoryRepository.findExistingCategoryByName(name)
         .filter(existing -> !existing.getId().equals(excludeId))
         .ifPresent(existing -> {
-          throw new BusinessRuleException("Você não pode ter duas categorias com mesmo nome.");
+          throw new BusinessRuleException("Você não pode ter duas categorias com mesmo nome");
         });
   }
 }
