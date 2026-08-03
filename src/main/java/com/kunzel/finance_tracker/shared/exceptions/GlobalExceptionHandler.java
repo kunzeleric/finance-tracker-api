@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import com.kunzel.finance_tracker.account.exceptions.InvalidBalanceException;
-
 import tools.jackson.databind.DatabindException;
 
 @RestControllerAdvice
@@ -33,11 +31,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             "campo", fieldError.getField(),
             "mensagem", fieldError.getDefaultMessage() != null
                 ? fieldError.getDefaultMessage()
-                : "Valor inválido."))
+                : "Valor inválido"))
         .toList();
 
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-        HttpStatus.BAD_REQUEST, "Um ou mais campos estão inválidos.");
+        HttpStatus.BAD_REQUEST, "Um ou mais campos estão inválidos");
     problemDetail.setTitle("Requisição Inválida");
     problemDetail.setProperty("errors", errors);
 
@@ -54,9 +52,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     if (cause instanceof DatabindException jme) {
       Throwable rootCause = jme.getCause();
 
-      String message = (rootCause instanceof IllegalArgumentException && rootCause.getMessage() != null)
+      String message = (rootCause instanceof ValidationException && rootCause.getMessage() != null)
           ? rootCause.getMessage()
-          : "Valor inválido no corpo da requisição.";
+          : "Valor inválido no corpo da requisição";
 
       String field = jme.getPath().stream()
           .map(DatabindException.Reference::getPropertyName)
@@ -65,7 +63,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
           .orElse("desconhecido");
 
       ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-          HttpStatus.BAD_REQUEST, "Um ou mais campos estão inválidos.");
+          HttpStatus.BAD_REQUEST, "Um ou mais campos estão inválidos");
       problemDetail.setTitle("Requisição Inválida");
       problemDetail.setProperty("errors", List.of(Map.of("campo", field, "mensagem", message)));
 
@@ -73,7 +71,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-        HttpStatus.BAD_REQUEST, "Corpo da requisição malformado.");
+        HttpStatus.BAD_REQUEST, "Corpo da requisição malformado");
     problemDetail.setTitle("Requisição Inválida");
 
     return ResponseEntity.badRequest().body(problemDetail);
@@ -87,24 +85,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return problemDetail;
   }
 
-  @ExceptionHandler(InvalidBalanceException.class)
-  public ProblemDetail handleAccountBalanceException(RuntimeException ex) {
+  @ExceptionHandler(ValidationException.class)
+  public ProblemDetail handleValidation(ValidationException ex) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
         HttpStatus.BAD_REQUEST, ex.getMessage());
     problemDetail.setTitle("Requisição Inválida");
     return problemDetail;
   }
 
-  @ExceptionHandler(IllegalArgumentException.class)
-  public ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
-    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-        HttpStatus.BAD_REQUEST, ex.getMessage());
-    problemDetail.setTitle("Requisição Inválida");
-    return problemDetail;
-  }
-
-  @ExceptionHandler(IllegalStateException.class)
-  public ProblemDetail handleIllegalState(IllegalStateException ex) {
+  @ExceptionHandler(BusinessRuleException.class)
+  public ProblemDetail handleBusinessRule(BusinessRuleException ex) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
         HttpStatus.CONFLICT, ex.getMessage());
     problemDetail.setTitle("Operação Não Permitida");
@@ -114,7 +104,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
   @ExceptionHandler(DataIntegrityViolationException.class)
   public ProblemDetail handleDataIntegrityViolation(DataIntegrityViolationException ex) {
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-        HttpStatus.CONFLICT, "A operação viola uma restrição de integridade dos dados.");
+        HttpStatus.CONFLICT, "A operação viola uma restrição de integridade dos dados");
     problemDetail.setTitle("Conflito de Dados");
     return problemDetail;
   }
@@ -124,7 +114,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     logger.error("Erro não tratado", ex);
 
     ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
-        HttpStatus.INTERNAL_SERVER_ERROR, "Ocorreu um erro inesperado.");
+        HttpStatus.INTERNAL_SERVER_ERROR, "Ocorreu um erro inesperado");
     problemDetail.setTitle("Erro Interno");
     return problemDetail;
   }

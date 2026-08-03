@@ -37,13 +37,14 @@ public class TransactionService {
   }
 
   @Transactional
-  public Transaction createTransaction(String description, BigDecimal amount, LocalDate date, Long accountId,
+  public Transaction createTransaction(String description, TransactionType type, BigDecimal amount, LocalDate date,
+      Long accountId,
       Long categoryId) {
 
     Account account = findAccountById(accountId);
     Category category = findCategoryById(categoryId);
 
-    Transaction createdTransaction = Transaction.create(description, amount, date, account, category);
+    Transaction createdTransaction = Transaction.create(description, type, amount, date, account, category);
     transactionRepository.save(createdTransaction);
 
     account.applyTransaction(createdTransaction.getSignedAmount());
@@ -53,7 +54,8 @@ public class TransactionService {
   }
 
   @Transactional
-  public Transaction updateTransaction(Long transactionId, String description, BigDecimal amount, LocalDate date,
+  public Transaction updateTransaction(Long transactionId, String description, TransactionType type, BigDecimal amount,
+      LocalDate date,
       Long accountId, Long categoryId) {
 
     Transaction transactionToUpdate = getTransactionById(transactionId);
@@ -64,7 +66,7 @@ public class TransactionService {
     Account newAccount = findAccountById(accountId);
     Category newCategory = findCategoryById(categoryId);
 
-    transactionToUpdate.update(description, amount, date, newAccount, newCategory);
+    transactionToUpdate.update(description, type, amount, date, newAccount, newCategory);
 
     oldAccount.reverseTransaction(oldSignedAmount);
     newAccount.applyTransaction(transactionToUpdate.getSignedAmount());
@@ -79,7 +81,6 @@ public class TransactionService {
   public void removeTransaction(Long transactionId) {
     Transaction transactionToRemove = getTransactionById(transactionId);
 
-    // explicitamente atualizando account no repositorio
     Account account = transactionToRemove.getAccount();
     account.reverseTransaction(transactionToRemove.getSignedAmount());
     accountRepository.save(account);

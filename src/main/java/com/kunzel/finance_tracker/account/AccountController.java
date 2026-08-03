@@ -1,9 +1,8 @@
 package com.kunzel.finance_tracker.account;
 
-import java.math.BigDecimal;
+import java.net.URI;
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,16 +12,20 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.kunzel.finance_tracker.account.dtos.AccountResponse;
 import com.kunzel.finance_tracker.account.dtos.CreateAccountRequest;
+import com.kunzel.finance_tracker.account.dtos.TotalBalanceResponse;
 import com.kunzel.finance_tracker.account.dtos.UpdateAccountRequest;
 
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/accounts")
+@RequestMapping(AccountController.BASE_PATH)
 public class AccountController {
+  static final String BASE_PATH = "/api/v1/accounts";
+
   private final AccountService accountService;
 
   public AccountController(AccountService accountService) {
@@ -31,32 +34,35 @@ public class AccountController {
 
   @GetMapping
   public ResponseEntity<List<AccountResponse>> fetchAccounts() {
-    List<AccountResponse> accounts = accountService.getAllAccounts().stream().map(AccountResponse::new).toList();
+    List<AccountResponse> accounts = accountService.getAllAccounts().stream().map(AccountResponse::from).toList();
     return ResponseEntity.ok().body(accounts);
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<AccountResponse> getAccount(@PathVariable("id") Long accountId) {
     Account accountToBeFound = accountService.getAccountById(accountId);
-    return ResponseEntity.ok().body(new AccountResponse(accountToBeFound));
+    return ResponseEntity.ok().body(AccountResponse.from(accountToBeFound));
   }
 
-  @GetMapping("/balance/total")
-  public ResponseEntity<BigDecimal> getTotalBalance() {
-    return ResponseEntity.ok().body(accountService.getTotalBalance());
+  @GetMapping("/balance")
+  public ResponseEntity<TotalBalanceResponse> getTotalBalance() {
+    return ResponseEntity.ok().body(new TotalBalanceResponse(accountService.getTotalBalance()));
   }
 
   @PostMapping
-  public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request) {
+  public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request,
+      UriComponentsBuilder uriBuilder) {
     Account createdAccount = accountService.createAccount(request.name(), request.initialBalance(), request.type());
-    return ResponseEntity.status(HttpStatus.CREATED).body(new AccountResponse(createdAccount));
+    URI location = uriBuilder.path(BASE_PATH + "/{id}").buildAndExpand(createdAccount.getId()).toUri();
+
+    return ResponseEntity.created(location).body(AccountResponse.from(createdAccount));
   }
 
   @PutMapping("/{id}")
   public ResponseEntity<AccountResponse> updateAccount(@PathVariable("id") Long accountId,
       @Valid @RequestBody UpdateAccountRequest request) {
     Account updatedAccount = accountService.updateAccount(accountId, request.name(), request.type());
-    return ResponseEntity.ok().body(new AccountResponse(updatedAccount));
+    return ResponseEntity.ok().body(AccountResponse.from(updatedAccount));
   }
 
   @DeleteMapping("/{id}")
