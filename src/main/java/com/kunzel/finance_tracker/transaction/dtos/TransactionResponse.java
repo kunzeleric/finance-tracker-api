@@ -6,8 +6,10 @@ import java.time.LocalDate;
 import com.kunzel.finance_tracker.account.dtos.AccountSummary;
 import com.kunzel.finance_tracker.category.dtos.CategorySummary;
 import com.kunzel.finance_tracker.transaction.Transaction;
+import com.kunzel.finance_tracker.transaction.TransactionType;
 
-public record TransactionResponse(Long transactionId, String description, BigDecimal amount, BigDecimal signedAmount,
+public record TransactionResponse(Long transactionId, String description, TransactionType type, BigDecimal amount,
+    BigDecimal signedAmount,
     LocalDate date,
     AccountSummary account,
     CategorySummary category) {
@@ -15,6 +17,7 @@ public record TransactionResponse(Long transactionId, String description, BigDec
     return new TransactionResponse(
         transaction.getId(),
         transaction.getDescription(),
+        transaction.getType(),
         transaction.getAmount(),
         transaction.getSignedAmount(),
         transaction.getDate(),

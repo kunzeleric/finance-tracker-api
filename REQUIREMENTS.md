@@ -12,7 +12,7 @@ Domínio: controle financeiro pessoal — transações, categorias, contas e or�
 
 - `Conta` (ex: carteira, banco X, cartão Y)
 - `Categoria` (ex: alimentação, transporte, salário)
-- `Transação` (valor, data, categoria, conta) — o tipo (receita/despesa) é herdado da categoria
+- `Transação` (valor, tipo, data, categoria, conta) — o tipo (receita/despesa) é atributo da própria transação
 
 ### Requisitos funcionais
 
@@ -23,14 +23,14 @@ Domínio: controle financeiro pessoal — transações, categorias, contas e or�
 
 **RF02 — Cadastrar categoria**
 
-- Critério: categoria tem nome e tipo (receita ou despesa) — o tipo é atributo da categoria, não da transação.
-- Critério: não deve permitir duas categorias com o mesmo nome e mesmo tipo.
+- Critério: categoria tem apenas nome — é neutra quanto a receita/despesa.
+- Critério: não deve permitir duas categorias com o mesmo nome.
 
 **RF03 — Cadastrar transação**
 
-- Critério: transação tem valor (positivo), data, categoria e conta associados.
-- Critério: a transação não possui tipo próprio; o tipo (receita/despesa) é derivado da categoria associada.
-- Critério: ao criar a transação, o saldo da conta associada deve ser atualizado conforme o tipo da categoria (receita soma, despesa subtrai).
+- Critério: transação tem valor (positivo), tipo (receita/despesa), data, categoria e conta associados.
+- Critério: o tipo é atributo da própria transação e é obrigatório. A categoria não o restringe — a mesma categoria pode receber transações de receita e de despesa.
+- Critério: ao criar a transação, o saldo da conta associada deve ser atualizado conforme o tipo da transação (receita soma, despesa subtrai).
 
 **RF04 — Listar transações**
 
@@ -39,6 +39,7 @@ Domínio: controle financeiro pessoal — transações, categorias, contas e or�
 **RF05 — Editar e excluir transação**
 
 - Critério: editar ou excluir uma transação deve recalcular corretamente o saldo da conta associada.
+- Critério: editar o tipo de uma transação (receita ↔ despesa) deve inverter o sinal aplicado ao saldo da conta.
 
 **RF06 — Consultar saldo de uma conta**
 
@@ -75,16 +76,18 @@ Domínio: controle financeiro pessoal — transações, categorias, contas e or�
 
 **RF07 — Definir orçamento mensal por categoria**
 
-- Critério: deve ser possível definir um limite de gasto mensal para uma categoria de despesa.
+- Critério: deve ser possível definir um limite de gasto mensal para uma categoria.
+- Critério: o limite considera apenas as transações de tipo despesa (EXPENSE) daquela categoria — a categoria em si não tem tipo.
 
 **RF08 — Alertar estouro de orçamento**
 
-- Critério: ao registrar uma transação de despesa, o sistema deve indicar se aquela categoria ultrapassou o orçamento do mês.
+- Critério: ao registrar uma transação de tipo despesa (EXPENSE), o sistema deve indicar se aquela categoria ultrapassou o orçamento do mês.
 - Critério: deve ser possível ter mais de uma "forma" de alerta (ex: só sinalizar no retorno da API vs. logar um aviso) sem alterar a lógica de cálculo do estouro — aqui é onde vale a pena isolar essa parte por trás de uma interface.
 
 **RF09 — Relatório agregado**
 
 - Critério: deve ser possível obter o total de despesas e receitas agrupado por categoria, dentro de um período.
+- Critério: o agrupamento é por (categoria, tipo) — como a categoria não tem tipo, a mesma categoria pode aparecer nos dois lados do relatório.
 
 **RF10 — Transações recorrentes**
 

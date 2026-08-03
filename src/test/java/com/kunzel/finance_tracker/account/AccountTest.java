@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import com.kunzel.finance_tracker.account.exceptions.InvalidBalanceException;
+import com.kunzel.finance_tracker.shared.exceptions.ValidationException;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -40,13 +41,13 @@ class AccountTest {
     @Test
     void shouldThrowExceptionWhenNameIsEmpty() {
       assertThatThrownBy(() -> Account.create("", BigDecimal.valueOf(10.00), AccountType.SAVINGS))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(ValidationException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenAccountTypeIsEmpty() {
       assertThatThrownBy(() -> Account.create("", BigDecimal.valueOf(10.00), null))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(ValidationException.class);
     }
   }
 }

@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.kunzel.finance_tracker.account.exceptions.InvalidBalanceException;
+import com.kunzel.finance_tracker.shared.exceptions.ValidationException;
 import com.kunzel.finance_tracker.transaction.Transaction;
 
 import jakarta.persistence.Column;
@@ -87,7 +88,7 @@ public class Account {
 
   public void changeType(AccountType newType) {
     if (newType == null) {
-      throw new IllegalArgumentException("Tipo da conta inválido.");
+      throw new ValidationException("Tipo da conta é obrigatório");
     }
     // TODO: validar se é uma mudança permitida
     // TODO: registrar um log/auditoria da mudança
@@ -100,11 +101,11 @@ public class Account {
     }
 
     if (name == null || name.isBlank()) {
-      throw new IllegalArgumentException("Nome da conta não pode estar em branco.");
+      throw new ValidationException("Nome da conta não pode estar em branco");
     }
 
     if (type == null) {
-      throw new IllegalArgumentException("Tipo da conta inválido.");
+      throw new ValidationException("Tipo da conta é obrigatório");
     }
 
     return new Account(name, initialBalance, type);
@@ -113,7 +114,7 @@ public class Account {
   public void update(String name, AccountType type) {
     if (name != null) {
       if (name.isBlank()) {
-        throw new IllegalArgumentException("Nome da conta não pode estar em branco");
+        throw new ValidationException("Nome da conta não pode estar em branco");
       }
       this.name = name;
     }

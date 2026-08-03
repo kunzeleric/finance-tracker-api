@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.kunzel.finance_tracker.account.exceptions.InvalidBalanceException;
+import com.kunzel.finance_tracker.shared.exceptions.BusinessRuleException;
 import com.kunzel.finance_tracker.shared.exceptions.NotFoundException;
 import com.kunzel.finance_tracker.transaction.TransactionRepository;
 
@@ -92,7 +93,7 @@ public class AccountServiceTest {
 
       assertThatThrownBy(
           () -> accountService.createAccount("Conta Poupança Nubank", BigDecimal.valueOf(100.00), AccountType.SAVINGS))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(BusinessRuleException.class);
 
       verify(accountRepository, never()).save(any());
     }
@@ -203,7 +204,7 @@ public class AccountServiceTest {
 
       assertThatThrownBy(
           () -> accountService.updateAccount(accountToBeUpdated.getId(), "Conta Teste", AccountType.SAVINGS))
-          .isInstanceOf(IllegalArgumentException.class);
+          .isInstanceOf(BusinessRuleException.class);
 
       verify(accountRepository).findById(accountToBeUpdated.getId());
       verify(accountRepository, never()).save(any());
@@ -237,7 +238,7 @@ public class AccountServiceTest {
       givenAccountHasTransactions(1L);
 
       assertThatThrownBy(() -> accountService.removeAccount(1L))
-          .isInstanceOf(IllegalStateException.class);
+          .isInstanceOf(BusinessRuleException.class);
 
       verify(accountRepository, never()).delete(any());
     }

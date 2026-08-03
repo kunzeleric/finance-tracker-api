@@ -1,12 +1,8 @@
 package com.kunzel.finance_tracker.category.dtos;
 
-import com.kunzel.finance_tracker.category.CategoryType;
-
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotBlank;
 
 public record UpdateCategoryRequest(
-        @NotNull(message = "não pode estar em branco") @Pattern(regexp = ".*\\S.*", message = "não pode estar em branco") String name,
-        @NotNull(message = "não pode estar em branco") CategoryType type) {
+                @NotBlank(message = "não pode estar em branco") String name) {
 
 }

@@ -6,12 +6,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import com.kunzel.finance_tracker.shared.exceptions.BusinessRuleException;
+import com.kunzel.finance_tracker.shared.exceptions.ValidationException;
+
 public class CategoryTest {
   Category category;
 
   @BeforeEach
   void setup() {
-    category = Category.createDefault("Alimentação", CategoryType.EXPENSE);
+    category = Category.createDefault("Alimentação");
   }
 
   @Nested
@@ -20,37 +23,31 @@ public class CategoryTest {
     @Test
     void shouldCreateDefaultCategory() {
       assertThat(category.getName()).isEqualTo("Alimentação");
-      assertThat(category.getType()).isEqualTo(CategoryType.EXPENSE);
       assertThat(category.isDefault()).isTrue();
     }
 
     @Test
     void shouldCreateCustomCategory() {
-      Category customCategory = Category.createCustom("Natação", CategoryType.EXPENSE);
+      Category customCategory = Category.createCustom("Natação");
       assertThat(customCategory.isDefault()).isFalse();
     }
 
     @Test
     void shouldThrowExceptionWhenCustomCategoryNameIsEmpty() {
-      assertThatThrownBy(() -> Category.createCustom("", CategoryType.EXPENSE))
-          .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    void shouldThrowExceptionWhenCustomCategoryTypeIsEmpty() {
-      assertThatThrownBy(() -> Category.createCustom("Natação", null)).isInstanceOf(IllegalArgumentException.class);
+      assertThatThrownBy(() -> Category.createCustom(""))
+          .isInstanceOf(ValidationException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenCustomCategoryNameIsBlank() {
-      assertThatThrownBy(() -> Category.createCustom("  ", CategoryType.INCOME))
-          .isInstanceOf(IllegalArgumentException.class);
+      assertThatThrownBy(() -> Category.createCustom("  "))
+          .isInstanceOf(ValidationException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenCustomCategoryNameIsNull() {
-      assertThatThrownBy(() -> Category.createCustom(null, CategoryType.INCOME))
-          .isInstanceOf(IllegalArgumentException.class);
+      assertThatThrownBy(() -> Category.createCustom(null))
+          .isInstanceOf(ValidationException.class);
     }
   }
 
@@ -59,51 +56,29 @@ public class CategoryTest {
 
     @Test
     void shouldRenameCustomCategory() {
-      Category customCategory = Category.createCustom("Freelance", CategoryType.INCOME);
+      Category customCategory = Category.createCustom("Freelance");
       String newName = "Projetos";
 
-      customCategory.rename(newName);
+      customCategory.update(newName);
       assertThat(customCategory.getName()).isEqualTo(newName);
     }
 
     @Test
     void shouldThrowExceptionWhenRenamingDefaultCategory() {
       String newName = "Freelance";
-      assertThatThrownBy(() -> category.rename(newName)).isInstanceOf(IllegalStateException.class);
+      assertThatThrownBy(() -> category.update(newName)).isInstanceOf(BusinessRuleException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenRenamingCustomCategoryWithNullName() {
-      Category customCategory = Category.createCustom("Freelance", CategoryType.INCOME);
-      assertThatThrownBy(() -> customCategory.rename(null)).isInstanceOf(IllegalArgumentException.class);
+      Category customCategory = Category.createCustom("Freelance");
+      assertThatThrownBy(() -> customCategory.update(null)).isInstanceOf(ValidationException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenRenamingCustomCategoryWithEmptyName() {
-      Category customCategory = Category.createCustom("Freelance", CategoryType.INCOME);
-      assertThatThrownBy(() -> customCategory.rename("")).isInstanceOf(IllegalArgumentException.class);
-    }
-  }
-
-  @Nested
-  class Type {
-
-    @Test
-    void shouldChangeCustomCategoryType() {
-      Category customCategory = Category.createCustom("Natação", CategoryType.INCOME);
-      customCategory.changeType(CategoryType.EXPENSE);
-      assertThat(customCategory.getType()).isEqualTo(CategoryType.EXPENSE);
-    }
-
-    @Test
-    void shouldThrowExceptionWhenChangingDefaultCategoryType() {
-      assertThatThrownBy(() -> category.changeType(CategoryType.INCOME)).isInstanceOf(IllegalStateException.class);
-    }
-
-    @Test
-    void shouldThrowExceptionWhenChangingCustomCategoryTypeToNull() {
-      Category customCategory = Category.createCustom("Natação", CategoryType.INCOME);
-      assertThatThrownBy(() -> customCategory.changeType(null)).isInstanceOf(IllegalArgumentException.class);
+      Category customCategory = Category.createCustom("Freelance");
+      assertThatThrownBy(() -> customCategory.update("")).isInstanceOf(ValidationException.class);
     }
   }
 }

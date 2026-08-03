@@ -6,7 +6,7 @@ Progresso de implementação dos requisitos da V1. Marque cada item conforme con
 
 - [x] `Conta` (ex: carteira, banco X, cartão Y)
 - [x] `Categoria` (ex: alimentação, transporte, salário)
-- [x] `Transação` (valor, data, categoria, conta) — tipo herdado da categoria
+- [x] `Transação` (valor, tipo, data, categoria, conta) — tipo próprio da transação
 
 ## Requisitos funcionais
 
@@ -18,14 +18,14 @@ Progresso de implementação dos requisitos da V1. Marque cada item conforme con
 
 ### RF02 — Cadastrar categoria
 
-- [x] Categoria tem nome e tipo (receita ou despesa)
-- [x] Não permitir duas categorias com o mesmo nome e mesmo tipo
+- [x] Categoria tem nome (sem tipo — é neutra quanto a receita/despesa)
+- [x] Não permitir duas categorias com o mesmo nome
 
 ### RF03 — Cadastrar transação
 
-- [x] Transação tem valor (positivo), data, categoria e conta associados
-- [x] Tipo (receita/despesa) derivado da categoria associada
-- [x] Ao criar transação, atualizar saldo da conta conforme tipo da categoria (receita soma, despesa subtrai)
+- [x] Transação tem valor (positivo), tipo, data, categoria e conta associados
+- [x] Tipo (receita/despesa) é atributo próprio da transação e obrigatório
+- [x] Ao criar transação, atualizar saldo da conta conforme tipo da transação (receita soma, despesa subtrai)
 
 ### RF04 — Listar transações
 
@@ -37,6 +37,7 @@ Progresso de implementação dos requisitos da V1. Marque cada item conforme con
 
 - [x] Editar transação recalcula corretamente o saldo da conta
 - [x] Excluir transação recalcula corretamente o saldo da conta
+- [x] Trocar o tipo da transação (receita ↔ despesa) inverte o sinal aplicado ao saldo
 
 ### RF06 — Consultar saldo de uma conta
 
