@@ -55,9 +55,8 @@ public class TransactionController {
   @PostMapping
   public ResponseEntity<TransactionResponse> createTransaction(@Valid @RequestBody CreateTransactionRequest request,
       UriComponentsBuilder uriBuilder) {
-    Transaction createdTransaction = transactionService.createTransaction(request.description(), request.type(),
-        request.amount(),
-        request.date(), request.accountId(), request.categoryId());
+    Transaction createdTransaction = transactionService.createTransaction(request.description(),
+        request.amount(), request.date(), request.accountId(), request.categoryId());
     URI location = uriBuilder.path(BASE_PATH + "/{id}").buildAndExpand(createdTransaction.getId()).toUri();
 
     return ResponseEntity.created(location).body(TransactionResponse.from(createdTransaction));
@@ -67,7 +66,6 @@ public class TransactionController {
   public ResponseEntity<TransactionResponse> updateTransaction(@PathVariable("id") Long transactionId,
       @Valid @RequestBody UpdateTransactionRequest request) {
     Transaction updatedTransaction = transactionService.updateTransaction(transactionId, request.description(),
-        request.type(),
         request.amount(), request.date(), request.accountId(), request.categoryId());
     return ResponseEntity.ok().body(TransactionResponse.from(updatedTransaction));
   }

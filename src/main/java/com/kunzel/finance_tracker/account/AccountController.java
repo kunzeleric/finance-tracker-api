@@ -34,14 +34,14 @@ public class AccountController {
 
   @GetMapping
   public ResponseEntity<List<AccountResponse>> fetchAccounts() {
-    List<AccountResponse> accounts = accountService.getAllAccounts().stream().map(AccountResponse::from).toList();
+    List<AccountResponse> accounts = accountService.getAllAccountsWithBalance().stream()
+        .map(AccountResponse::from).toList();
     return ResponseEntity.ok().body(accounts);
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<AccountResponse> getAccount(@PathVariable("id") Long accountId) {
-    Account accountToBeFound = accountService.getAccountById(accountId);
-    return ResponseEntity.ok().body(AccountResponse.from(accountToBeFound));
+    return ResponseEntity.ok().body(AccountResponse.from(accountService.getAccountWithBalance(accountId)));
   }
 
   @GetMapping("/balance")
@@ -52,8 +52,9 @@ public class AccountController {
   @PostMapping
   public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody CreateAccountRequest request,
       UriComponentsBuilder uriBuilder) {
-    Account createdAccount = accountService.createAccount(request.name(), request.initialBalance(), request.type());
-    URI location = uriBuilder.path(BASE_PATH + "/{id}").buildAndExpand(createdAccount.getId()).toUri();
+    AccountWithBalance createdAccount = accountService.createAccount(request.name(), request.openingBalance(),
+        request.type(), request.color(), request.institution());
+    URI location = uriBuilder.path(BASE_PATH + "/{id}").buildAndExpand(createdAccount.id()).toUri();
 
     return ResponseEntity.created(location).body(AccountResponse.from(createdAccount));
   }
@@ -61,7 +62,8 @@ public class AccountController {
   @PutMapping("/{id}")
   public ResponseEntity<AccountResponse> updateAccount(@PathVariable("id") Long accountId,
       @Valid @RequestBody UpdateAccountRequest request) {
-    Account updatedAccount = accountService.updateAccount(accountId, request.name(), request.type());
+    AccountWithBalance updatedAccount = accountService.updateAccount(accountId, request.name(), request.type(),
+        request.color(), request.institution());
     return ResponseEntity.ok().body(AccountResponse.from(updatedAccount));
   }
 

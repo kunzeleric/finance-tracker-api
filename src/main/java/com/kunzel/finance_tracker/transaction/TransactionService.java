@@ -12,8 +12,6 @@ import com.kunzel.finance_tracker.category.Category;
 import com.kunzel.finance_tracker.category.CategoryRepository;
 import com.kunzel.finance_tracker.shared.exceptions.NotFoundException;
 
-import org.springframework.transaction.annotation.Transactional;
-
 @Service
 public class TransactionService {
   private final TransactionRepository transactionRepository;
@@ -36,56 +34,32 @@ public class TransactionService {
         .orElseThrow(() -> new NotFoundException(transactionId, "TRANSAÇÃO"));
   }
 
-  @Transactional
-  public Transaction createTransaction(String description, TransactionType type, BigDecimal amount, LocalDate date,
+  public Transaction createTransaction(String description, BigDecimal amount, LocalDate date,
       Long accountId,
       Long categoryId) {
 
     Account account = findAccountById(accountId);
     Category category = findCategoryById(categoryId);
 
-    Transaction createdTransaction = Transaction.create(description, type, amount, date, account, category);
-    transactionRepository.save(createdTransaction);
-
-    account.applyTransaction(createdTransaction.getSignedAmount());
-    accountRepository.save(account);
-
-    return createdTransaction;
+    return transactionRepository.save(Transaction.create(description, amount, date, account, category));
   }
 
-  @Transactional
-  public Transaction updateTransaction(Long transactionId, String description, TransactionType type, BigDecimal amount,
+  public Transaction updateTransaction(Long transactionId, String description, BigDecimal amount,
       LocalDate date,
       Long accountId, Long categoryId) {
 
     Transaction transactionToUpdate = getTransactionById(transactionId);
 
-    Account oldAccount = transactionToUpdate.getAccount();
-    BigDecimal oldSignedAmount = transactionToUpdate.getSignedAmount();
-
     Account newAccount = findAccountById(accountId);
     Category newCategory = findCategoryById(categoryId);
 
-    transactionToUpdate.update(description, type, amount, date, newAccount, newCategory);
-
-    oldAccount.reverseTransaction(oldSignedAmount);
-    newAccount.applyTransaction(transactionToUpdate.getSignedAmount());
-
-    accountRepository.save(oldAccount);
-    accountRepository.save(newAccount);
+    transactionToUpdate.update(description, amount, date, newAccount, newCategory);
 
     return transactionRepository.save(transactionToUpdate);
   }
 
-  @Transactional
   public void removeTransaction(Long transactionId) {
-    Transaction transactionToRemove = getTransactionById(transactionId);
-
-    Account account = transactionToRemove.getAccount();
-    account.reverseTransaction(transactionToRemove.getSignedAmount());
-    accountRepository.save(account);
-
-    transactionRepository.delete(transactionToRemove);
+    transactionRepository.delete(getTransactionById(transactionId));
   }
 
   private Account findAccountById(Long accountId) {
