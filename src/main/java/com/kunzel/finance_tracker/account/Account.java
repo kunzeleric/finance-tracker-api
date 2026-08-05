@@ -94,12 +94,10 @@ public class Account {
     return creationDate;
   }
 
-  public void changeType(AccountType newType) {
+  private void changeType(AccountType newType) {
     if (newType == null) {
       throw new ValidationException("Tipo da conta é obrigatório");
     }
-    // TODO: validar se é uma mudança permitida
-    // TODO: registrar um log/auditoria da mudança
     this.type = newType;
   }
 
