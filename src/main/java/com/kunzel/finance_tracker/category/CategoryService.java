@@ -3,9 +3,11 @@ package com.kunzel.finance_tracker.category;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.kunzel.finance_tracker.shared.exceptions.BusinessRuleException;
 import com.kunzel.finance_tracker.shared.exceptions.NotFoundException;
+import com.kunzel.finance_tracker.shared.exceptions.ValidationException;
 import com.kunzel.finance_tracker.transaction.TransactionRepository;
 
 @Service
@@ -46,18 +48,37 @@ public class CategoryService {
     return categoryRepository.save(categoryToUpdate);
   }
 
-  public void removeCategory(Long categoryId) {
+  @Transactional
+  public void removeCategory(Long categoryId, Long reassignToId) {
     Category categoryToRemove = getCategoryById(categoryId);
 
     if (categoryToRemove.isDefault()) {
       throw new BusinessRuleException("Categoria padrão não pode ser deletada");
     }
 
-    if (transactionRepository.existsByCategoryId(categoryId)) {
-      throw new BusinessRuleException("Categoria com lançamentos registrados não pode ser removida");
+    if (reassignToId != null) {
+      Category reassignTarget = resolveReassignTarget(categoryToRemove, reassignToId);
+      transactionRepository.reassignCategory(categoryId, reassignTarget);
+    } else {
+      transactionRepository.deleteByCategoryId(categoryId);
     }
 
     categoryRepository.delete(categoryToRemove);
+  }
+
+  private Category resolveReassignTarget(Category categoryToRemove, Long reassignToId) {
+    if (reassignToId.equals(categoryToRemove.getId())) {
+      throw new ValidationException("Categoria de destino não pode ser a mesma que está sendo removida");
+    }
+
+    Category reassignTarget = getCategoryById(reassignToId);
+
+    if (reassignTarget.getType() != categoryToRemove.getType()) {
+      throw new BusinessRuleException(
+          "Categoria de destino precisa ser do mesmo tipo (" + categoryToRemove.getType() + ")");
+    }
+
+    return reassignTarget;
   }
 
   private void assertNameAvailable(String name, Long excludeId) {

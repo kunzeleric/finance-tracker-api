@@ -3,6 +3,7 @@ package com.kunzel.finance_tracker.category;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -19,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.kunzel.finance_tracker.shared.exceptions.BusinessRuleException;
 import com.kunzel.finance_tracker.shared.exceptions.NotFoundException;
+import com.kunzel.finance_tracker.shared.exceptions.ValidationException;
 import com.kunzel.finance_tracker.transaction.TransactionRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,12 +52,8 @@ class CategoryServiceTest {
         .thenReturn(Optional.of(categoryOwner));
   }
 
-  private void givenCategoryHasTransactions(Long categoryId) {
-    when(transactionRepository.existsByCategoryId(categoryId)).thenReturn(true);
-  }
-
-  private void givenCategoryHasNoTransactions(Long categoryId) {
-    when(transactionRepository.existsByCategoryId(categoryId)).thenReturn(false);
+  private void givenCategoryMissing(Long categoryId) {
+    when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
   }
 
   @Nested
@@ -113,42 +111,86 @@ class CategoryServiceTest {
   @Nested
   class Delete {
     @Test
-    void shouldRemoveExistingCategory() {
+    void shouldCascadeDeleteTransactionsWhenNoReassignTargetIsGiven() {
       Category existingCategory = CategoryTestFixtures.withId(1L, "Alimentação");
 
       givenCategoryExists(existingCategory);
-      givenCategoryHasNoTransactions(existingCategory.getId());
 
-      categoryService.removeCategory(existingCategory.getId());
+      categoryService.removeCategory(existingCategory.getId(), null);
 
-      verify(categoryRepository).findById(existingCategory.getId());
+      verify(transactionRepository).deleteByCategoryId(existingCategory.getId());
       verify(categoryRepository).delete(existingCategory);
     }
 
     @Test
-    void shouldThrowExceptionWhenRemovingCategoryWithTransactions() {
-      Category categoryWithTransactions = CategoryTestFixtures.withId(1L, "Alimentação");
+    void shouldReassignTransactionsWhenTargetIsGiven() {
+      Category categoryToRemove = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
+      Category reassignTarget = CategoryTestFixtures.withId(2L, "Mercado", CategoryType.EXPENSE);
 
-      givenCategoryExists(categoryWithTransactions);
-      givenCategoryHasTransactions(1L);
+      givenCategoryExists(categoryToRemove);
+      givenCategoryExists(reassignTarget);
 
-      assertThatThrownBy(() -> categoryService.removeCategory(1L))
+      categoryService.removeCategory(categoryToRemove.getId(), reassignTarget.getId());
+
+      verify(transactionRepository).reassignCategory(categoryToRemove.getId(), reassignTarget);
+      verify(transactionRepository, never()).deleteByCategoryId(anyLong());
+      verify(categoryRepository).delete(categoryToRemove);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenReassignTargetDoesNotExist() {
+      Category categoryToRemove = CategoryTestFixtures.withId(1L, "Alimentação");
+      Long inexistentTargetId = 99L;
+
+      givenCategoryExists(categoryToRemove);
+      givenCategoryMissing(inexistentTargetId);
+
+      assertThatThrownBy(() -> categoryService.removeCategory(categoryToRemove.getId(), inexistentTargetId))
+          .isInstanceOf(NotFoundException.class);
+
+      verify(categoryRepository, never()).delete(any());
+      verify(transactionRepository, never()).deleteByCategoryId(anyLong());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenReassignTargetHasDifferentType() {
+      Category expenseCategory = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
+      Category incomeCategory = CategoryTestFixtures.withId(2L, "Salário", CategoryType.INCOME);
+
+      givenCategoryExists(expenseCategory);
+      givenCategoryExists(incomeCategory);
+
+      assertThatThrownBy(() -> categoryService.removeCategory(expenseCategory.getId(), incomeCategory.getId()))
           .isInstanceOf(BusinessRuleException.class);
 
       verify(categoryRepository, never()).delete(any());
+      verify(transactionRepository, never()).reassignCategory(anyLong(), any());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenReassignTargetIsTheCategoryItself() {
+      Category categoryToRemove = CategoryTestFixtures.withId(1L, "Alimentação");
+
+      givenCategoryExists(categoryToRemove);
+
+      assertThatThrownBy(() -> categoryService.removeCategory(categoryToRemove.getId(), categoryToRemove.getId()))
+          .isInstanceOf(ValidationException.class);
+
+      verify(categoryRepository, never()).delete(any());
+      verify(transactionRepository, never()).deleteByCategoryId(anyLong());
     }
 
     @Test
     void shouldThrowExceptionWhenDeletingCategoryWithInvalidId() {
       Long inexistentCategoryId = 2L;
 
-      when(categoryRepository.findById(inexistentCategoryId))
-          .thenReturn(Optional.empty());
+      givenCategoryMissing(inexistentCategoryId);
 
-      assertThatThrownBy(() -> categoryService.removeCategory(inexistentCategoryId))
+      assertThatThrownBy(() -> categoryService.removeCategory(inexistentCategoryId, null))
           .isInstanceOf(NotFoundException.class);
 
       verify(categoryRepository, never()).delete(any());
+      verify(transactionRepository, never()).deleteByCategoryId(anyLong());
     }
 
     @Test
@@ -157,11 +199,12 @@ class CategoryServiceTest {
 
       givenCategoryExists(defaultCategory);
 
-      assertThatThrownBy(() -> categoryService.removeCategory(defaultCategory.getId()))
+      assertThatThrownBy(() -> categoryService.removeCategory(defaultCategory.getId(), null))
           .isInstanceOf(BusinessRuleException.class);
 
       verify(categoryRepository).findById(defaultCategory.getId());
       verify(categoryRepository, never()).delete(any());
+      verify(transactionRepository, never()).deleteByCategoryId(anyLong());
     }
   }
 

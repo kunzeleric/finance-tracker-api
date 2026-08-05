@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -33,7 +34,8 @@ public class CategoryController {
 
   @GetMapping
   public ResponseEntity<List<CategoryResponse>> fetchCategories() {
-    List<CategoryResponse> categories = categoryService.getAllCategories().stream().map(CategoryResponse::from).toList();
+    List<CategoryResponse> categories = categoryService.getAllCategories().stream().map(CategoryResponse::from)
+        .toList();
     return ResponseEntity.ok().body(categories);
   }
 
@@ -61,8 +63,9 @@ public class CategoryController {
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> removeCategory(@PathVariable("id") Long categoryId) {
-    categoryService.removeCategory(categoryId);
+  public ResponseEntity<Void> removeCategory(@PathVariable("id") Long categoryId,
+      @RequestParam(name = "reassignTo", required = false) Long reassignToId) {
+    categoryService.removeCategory(categoryId, reassignToId);
     return ResponseEntity.noContent().build();
   }
 }

@@ -5,8 +5,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import com.kunzel.finance_tracker.category.Category;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
@@ -26,7 +29,13 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
       """)
   Optional<Transaction> findByIdWithRelations(Long transactionId);
 
-  boolean existsByCategoryId(Long categoryId);
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query("UPDATE Transaction t SET t.category = :target WHERE t.category.id = :sourceCategoryId")
+  int reassignCategory(Long sourceCategoryId, Category target);
+
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query("DELETE FROM Transaction t WHERE t.category.id = :categoryId")
+  int deleteByCategoryId(Long categoryId);
 
   boolean existsByAccountId(Long accountId);
 }
