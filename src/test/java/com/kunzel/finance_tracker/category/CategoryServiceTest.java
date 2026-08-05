@@ -70,7 +70,7 @@ class CategoryServiceTest {
       givenNameTakenBy(existingCategory);
 
       // ACT + ASSERT — service deve barrar a duplicata.
-      assertThatThrownBy(() -> categoryService.createCategory("Alimentação"))
+      assertThatThrownBy(() -> categoryService.createCategory("Alimentação", CategoryType.EXPENSE, null))
           .isInstanceOf(BusinessRuleException.class);
 
       // Verifica a INTERAÇÃO: como lançou, nunca deve ter tentado salvar.
@@ -83,10 +83,12 @@ class CategoryServiceTest {
 
       givenCategorySaveReturnsArgument();
 
-      Category category = categoryService.createCategory("Natação");
+      Category category = categoryService.createCategory("Natação", CategoryType.EXPENSE, "#3B82F6");
 
       assertThat(category.getName()).isEqualTo("Natação");
       assertThat(category.isDefault()).isFalse();
+      assertThat(category.getType()).isEqualTo(CategoryType.EXPENSE);
+      assertThat(category.getColor()).isEqualTo("#3B82F6");
 
       verify(categoryRepository).save(category);
     }
@@ -97,10 +99,11 @@ class CategoryServiceTest {
 
       givenCategorySaveReturnsArgument();
 
-      Category category = categoryService.createDefaultCategory("Salário");
+      Category category = categoryService.createDefaultCategory("Salário", CategoryType.INCOME, null);
 
       assertThat(category.getName()).isEqualTo("Salário");
       assertThat(category.isDefault()).isTrue();
+      assertThat(category.getType()).isEqualTo(CategoryType.INCOME);
 
       verify(categoryRepository).save(category);
     }
@@ -223,7 +226,7 @@ class CategoryServiceTest {
       givenCategoryExists(existingCategory);
       givenCategorySaveReturnsArgument();
 
-      Category updatedCategory = categoryService.updateCategory(existingCategory.getId(), newCategoryName);
+      Category updatedCategory = categoryService.updateCategory(existingCategory.getId(), newCategoryName, null, null);
 
       assertThat(updatedCategory.getName()).isEqualTo(newCategoryName);
       assertThat(updatedCategory.getId()).isEqualByComparingTo(existingCategory.getId());
@@ -233,16 +236,59 @@ class CategoryServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenUpdatingDefaultCategory() {
+    void shouldUpdateCustomCategoryType() {
+      Category existingCategory = CategoryTestFixtures.withId(1L, "Freelance", CategoryType.EXPENSE);
+
+      givenCategoryExists(existingCategory);
+      givenCategorySaveReturnsArgument();
+
+      Category updatedCategory = categoryService.updateCategory(existingCategory.getId(), null, null,
+          CategoryType.INCOME);
+
+      assertThat(updatedCategory.getType()).isEqualTo(CategoryType.INCOME);
+
+      verify(categoryRepository).save(updatedCategory);
+    }
+
+    @Test
+    void shouldUpdateColorOfDefaultCategory() {
+      Category existingDefaultCategory = CategoryTestFixtures.defaultWithId(1L, "Categoria Padrão");
+
+      givenCategoryExists(existingDefaultCategory);
+      givenCategorySaveReturnsArgument();
+
+      Category updatedCategory = categoryService.updateCategory(existingDefaultCategory.getId(), null, "#EC4899", null);
+
+      assertThat(updatedCategory.getColor()).isEqualTo("#EC4899");
+
+      verify(categoryRepository).save(updatedCategory);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenRenamingDefaultCategory() {
       Category existingDefaultCategory = CategoryTestFixtures.defaultWithId(1L, "Categoria Padrão");
 
       givenCategoryExists(existingDefaultCategory);
 
       assertThatThrownBy(
-          () -> categoryService.updateCategory(existingDefaultCategory.getId(), "Nova Categoria Padrão"))
+          () -> categoryService.updateCategory(existingDefaultCategory.getId(), "Nova Categoria Padrão", null, null))
           .isInstanceOf(BusinessRuleException.class);
 
       verify(categoryRepository).findById(existingDefaultCategory.getId());
+      verify(categoryRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenChangingTypeOfDefaultCategory() {
+      Category existingDefaultCategory = CategoryTestFixtures.defaultWithId(1L, "Categoria Padrão",
+          CategoryType.EXPENSE);
+
+      givenCategoryExists(existingDefaultCategory);
+
+      assertThatThrownBy(
+          () -> categoryService.updateCategory(existingDefaultCategory.getId(), null, null, CategoryType.INCOME))
+          .isInstanceOf(BusinessRuleException.class);
+
       verify(categoryRepository, never()).save(any());
     }
 
@@ -255,7 +301,8 @@ class CategoryServiceTest {
 
       givenCategorySaveReturnsArgument();
 
-      Category sameCategoryUpdated = categoryService.updateCategory(categoryToBeUpdated.getId(), "Freelance");
+      Category sameCategoryUpdated = categoryService.updateCategory(categoryToBeUpdated.getId(), "Freelance", null,
+          null);
 
       assertThat(sameCategoryUpdated).isEqualTo(categoryToBeUpdated);
 

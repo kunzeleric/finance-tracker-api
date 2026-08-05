@@ -9,13 +9,15 @@
 -- Keep this invariant when editing: current_balance == initial_balance + SUM(signed txns) per account.
 
 -- Categories -------------------------------------------------------------
-INSERT INTO categories (id, name, is_default, creation_date) VALUES
-  (1, 'Salário',        TRUE, DATE '2026-01-01'),
-  (2, 'Freelance',      TRUE, DATE '2026-01-01'),
-  (3, 'Alimentação',    TRUE, DATE '2026-01-01'),
-  (4, 'Moradia',        TRUE, DATE '2026-01-01'),
-  (5, 'Transporte',     TRUE, DATE '2026-01-01'),
-  (6, 'Lazer',          TRUE, DATE '2026-01-01');
+-- 'type' classifica a categoria (INCOME/EXPENSE). Cada transação abaixo usa uma
+-- categoria coerente com o próprio 'type' — mantenha isso ao editar.
+INSERT INTO categories (id, name, type, color, is_default, creation_date) VALUES
+  (1, 'Salário',      'INCOME',  '#22C55E', TRUE, DATE '2026-01-01'),
+  (2, 'Freelance',    'INCOME',  '#14B8A6', TRUE, DATE '2026-01-01'),
+  (3, 'Alimentação',  'EXPENSE', '#F97316', TRUE, DATE '2026-01-01'),
+  (4, 'Moradia',      'EXPENSE', '#8B5CF6', TRUE, DATE '2026-01-01'),
+  (5, 'Transporte',   'EXPENSE', '#3B82F6', TRUE, DATE '2026-01-01'),
+  (6, 'Lazer',        'EXPENSE', '#EC4899', TRUE, DATE '2026-01-01');
 
 -- Accounts (current_balance == initial_balance + net of transactions below) --
 --   1: 0 + 4500 + 1200 - 350.75 - 1500 = 3849.25

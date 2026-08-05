@@ -26,26 +26,23 @@ public class CategoryService {
     return categoryRepository.findAll();
   }
 
-  public Category createCategory(String name) {
+  public Category createCategory(String name, CategoryType type, String color) {
     assertNameAvailable(name, null);
-    return categoryRepository.save(Category.createCustom(name));
+    return categoryRepository.save(Category.createCustom(name, type, color));
   }
 
-  public Category createDefaultCategory(String name) {
+  public Category createDefaultCategory(String name, CategoryType type, String color) {
     assertNameAvailable(name, null);
-    return categoryRepository.save(Category.createDefault(name));
+    return categoryRepository.save(Category.createDefault(name, type, color));
   }
 
-  public Category updateCategory(Long categoryId, String name) {
+  public Category updateCategory(Long categoryId, String name, String color, CategoryType type) {
     Category categoryToUpdate = getCategoryById(categoryId);
-
-    if (categoryToUpdate.isDefault()) {
-      throw new BusinessRuleException("Categoria padrão não pode ser atualizada");
-    }
 
     assertNameAvailable(name, categoryId);
 
-    categoryToUpdate.update(name);
+    // As regras de categoria padrão (só cor é editável) vivem na entidade.
+    categoryToUpdate.update(name, color, type);
     return categoryRepository.save(categoryToUpdate);
   }
 
@@ -64,6 +61,10 @@ public class CategoryService {
   }
 
   private void assertNameAvailable(String name, Long excludeId) {
+    if (name == null) {
+      return;
+    }
+
     categoryRepository.findExistingCategoryByName(name)
         .filter(existing -> !existing.getId().equals(excludeId))
         .ifPresent(existing -> {

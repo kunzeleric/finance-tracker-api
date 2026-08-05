@@ -46,7 +46,7 @@ public class CategoryController {
   @PostMapping
   public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request,
       UriComponentsBuilder uriBuilder) {
-    Category createdCategory = categoryService.createCategory(request.name());
+    Category createdCategory = categoryService.createCategory(request.name(), request.type(), request.color());
     URI location = uriBuilder.path(BASE_PATH + "/{id}").buildAndExpand(createdCategory.getId()).toUri();
 
     return ResponseEntity.created(location).body(CategoryResponse.from(createdCategory));
@@ -55,7 +55,8 @@ public class CategoryController {
   @PutMapping("/{id}")
   public ResponseEntity<CategoryResponse> updateCategory(@PathVariable("id") Long categoryId,
       @Valid @RequestBody UpdateCategoryRequest request) {
-    Category updatedCategory = categoryService.updateCategory(categoryId, request.name());
+    Category updatedCategory = categoryService.updateCategory(categoryId, request.name(), request.color(),
+        request.type());
     return ResponseEntity.ok().body(CategoryResponse.from(updatedCategory));
   }
 
