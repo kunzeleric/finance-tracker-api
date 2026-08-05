@@ -6,15 +6,15 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 public class AccountTestFixtures {
   public static Account defaultAccount() {
-    return Account.create("Conta teste", BigDecimal.ZERO, AccountType.SAVINGS);
+    return Account.create("Conta teste", BigDecimal.ZERO, AccountType.SAVINGS, null, null);
   }
 
-  public static Account savingsWithId(Long id, BigDecimal initialBalance) {
-    return withId(id, "Conta Teste", initialBalance, AccountType.SAVINGS);
+  public static Account savingsWithId(Long id, BigDecimal openingBalance) {
+    return withId(id, "Conta Teste", openingBalance, AccountType.SAVINGS);
   }
 
-  public static Account withId(Long id, String name, BigDecimal initialBalance, AccountType type) {
-    Account account = Account.create(name, initialBalance, type);
+  public static Account withId(Long id, String name, BigDecimal openingBalance, AccountType type) {
+    Account account = Account.create(name, openingBalance, type, null, null);
     ReflectionTestUtils.setField(account, "id", id);
     return account;
   }

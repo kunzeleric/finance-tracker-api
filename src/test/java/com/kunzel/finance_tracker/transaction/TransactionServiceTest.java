@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -12,7 +11,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -20,12 +18,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import com.kunzel.finance_tracker.account.Account;
 import com.kunzel.finance_tracker.account.AccountRepository;
 import com.kunzel.finance_tracker.account.AccountTestFixtures;
-import com.kunzel.finance_tracker.account.AccountType;
 import com.kunzel.finance_tracker.category.Category;
 import com.kunzel.finance_tracker.category.CategoryRepository;
 import com.kunzel.finance_tracker.category.CategoryTestFixtures;
@@ -178,44 +174,7 @@ public class TransactionServiceTest {
                                         category.getId());
 
                         assertThat(createdTransaction.getType()).isEqualTo(CategoryType.INCOME);
-                }
-
-                @Test
-                void shouldIncreaseAccountBalanceWhenCreatingIncomeTransaction() {
-                        Account account = AccountTestFixtures.savingsWithId(1L, BigDecimal.valueOf(1000.00));
-                        Category category = incomeCategory(1L, "Salário");
-
-                        givenAccountExists(account);
-                        givenCategoryExists(category);
-                        givenTransactionSaveReturnsArgument();
-
-                        transactionService.createTransaction("Transação Income",
-                                        BigDecimal.valueOf(100.00),
-                                        LocalDate.of(2026, 7, 28), account.getId(),
-                                        category.getId());
-
-                        assertThat(account.getCurrentBalance())
-                                        .isEqualByComparingTo(
-                                                        account.getInitialBalance().add(BigDecimal.valueOf(100.00)));
-                }
-
-                @Test
-                void shouldDecreaseAccountBalanceWhenCreatingExpenseTransaction() {
-                        Account account = AccountTestFixtures.savingsWithId(1L, BigDecimal.valueOf(1000.00));
-                        Category category = expenseCategory(1L, "Categoria Teste");
-
-                        givenAccountExists(account);
-                        givenCategoryExists(category);
-                        givenTransactionSaveReturnsArgument();
-
-                        transactionService.createTransaction("Transação Expense",
-                                        BigDecimal.valueOf(100.00),
-                                        LocalDate.of(2026, 7, 28), account.getId(),
-                                        category.getId());
-
-                        assertThat(account.getCurrentBalance())
-                                        .isEqualByComparingTo(account.getInitialBalance()
-                                                        .subtract(BigDecimal.valueOf(100.00)));
+                        assertThat(createdTransaction.getSignedAmount()).isPositive();
                 }
 
                 @Test
@@ -266,53 +225,7 @@ public class TransactionServiceTest {
 
                         verify(transactionRepository).findByIdWithRelations(existingTransaction.getId());
                         verify(transactionRepository).delete(existingTransaction);
-                        verify(accountRepository).save(any(Account.class));
-                }
-
-                @Test
-                void shouldRecalculateAccountBalanceWhenDeletingIncomeTransaction() {
-                        Account account = AccountTestFixtures.savingsWithId(1L, BigDecimal.valueOf(1000.00));
-                        Category category = incomeCategory(1L, "Salário");
-
-                        Transaction existingTransaction = TransactionTestFixtures.withId(1L, "Transação Income",
-                                        BigDecimal.valueOf(100.00),
-                                        LocalDate.of(2026, 7, 28), account,
-                                        category);
-
-                        account.applyTransaction(existingTransaction.getSignedAmount());
-
-                        givenTransactionExists(existingTransaction);
-
-                        transactionService.removeTransaction(existingTransaction.getId());
-
-                        assertThat(account.getCurrentBalance())
-                                        .isEqualByComparingTo(account.getInitialBalance());
-
-                        verify(transactionRepository).findByIdWithRelations(existingTransaction.getId());
-                        verify(accountRepository).save(any(Account.class));
-                }
-
-                @Test
-                void shouldRecalculateAccountBalanceWhenDeletingExpenseTransaction() {
-                        Account account = AccountTestFixtures.savingsWithId(1L, BigDecimal.valueOf(1000.00));
-                        Category category = CategoryTestFixtures.defaultCategory();
-
-                        Transaction existingTransaction = TransactionTestFixtures.withId(1L, "Transação Expense",
-                                        BigDecimal.valueOf(100.00),
-                                        LocalDate.of(2026, 7, 28), account,
-                                        category);
-
-                        account.applyTransaction(existingTransaction.getSignedAmount());
-
-                        givenTransactionExists(existingTransaction);
-
-                        transactionService.removeTransaction(existingTransaction.getId());
-
-                        assertThat(account.getCurrentBalance())
-                                        .isEqualByComparingTo(account.getInitialBalance());
-
-                        verify(transactionRepository).findByIdWithRelations(existingTransaction.getId());
-                        verify(accountRepository).save(any(Account.class));
+                        verify(accountRepository, never()).save(any());
                 }
 
                 @Test
@@ -363,65 +276,28 @@ public class TransactionServiceTest {
                 }
 
                 @Test
-                void shouldRecalculateAccountBalanceWhenUpdatingIncomeTransaction() {
+                void shouldFlipSignWhenMovingTransactionToCategoryOfOtherType() {
                         Account account = AccountTestFixtures.savingsWithId(1L, BigDecimal.valueOf(1000.00));
-                        Category category = incomeCategory(1L, "Salário");
+                        Category originCategory = incomeCategory(1L, "Salário");
+                        Category targetCategory = expenseCategory(2L, "Mercado");
 
-                        Transaction existingTransaction = TransactionTestFixtures.withId(1L, "Transação Income",
+                        Transaction existingTransaction = TransactionTestFixtures.withId(1L, "Transação Teste",
                                         BigDecimal.valueOf(100.00),
-                                        LocalDate.of(2026, 7, 28), account,
-                                        category);
+                                        LocalDate.of(2026, 7, 28), account, originCategory);
 
-                        account.applyTransaction(existingTransaction.getSignedAmount());
+                        assertThat(existingTransaction.getSignedAmount()).isPositive();
 
                         givenTransactionExists(existingTransaction);
                         givenAccountExists(account);
-                        givenCategoryExists(category);
+                        givenCategoryExists(targetCategory);
                         givenTransactionSaveReturnsArgument();
 
-                        transactionService.updateTransaction(existingTransaction.getId(),
-                                        "Transação Teste Novo", BigDecimal.valueOf(150.00),
-                                        existingTransaction.getDate(),
-                                        account.getId(), category.getId());
+                        transactionService.updateTransaction(existingTransaction.getId(), "Transação Teste",
+                                        existingTransaction.getAmount(),
+                                        existingTransaction.getDate(), account.getId(), targetCategory.getId());
 
-                        assertThat(account.getCurrentBalance())
-                                        .isEqualByComparingTo(
-                                                        account.getInitialBalance().add(BigDecimal.valueOf(150.00)));
-
-                        verify(transactionRepository).findByIdWithRelations(existingTransaction.getId());
-                        verify(transactionRepository).save(any(Transaction.class));
-                        verify(accountRepository, times(2)).save(any(Account.class));
-                }
-
-                @Test
-                void shouldRecalculateAccountBalanceWhenUpdatingExpenseTransaction() {
-                        Account account = AccountTestFixtures.savingsWithId(1L, BigDecimal.valueOf(1000.00));
-                        Category category = expenseCategory(1L, "Categoria Teste");
-
-                        Transaction existingTransaction = TransactionTestFixtures.withId(1L, "Transação Expense",
-                                        BigDecimal.valueOf(100.00),
-                                        LocalDate.of(2026, 7, 28), account,
-                                        category);
-
-                        account.applyTransaction(existingTransaction.getSignedAmount());
-
-                        givenTransactionExists(existingTransaction);
-                        givenAccountExists(account);
-                        givenCategoryExists(category);
-                        givenTransactionSaveReturnsArgument();
-
-                        transactionService.updateTransaction(existingTransaction.getId(),
-                                        "Transação Teste Novo", BigDecimal.valueOf(150.00),
-                                        existingTransaction.getDate(),
-                                        account.getId(), category.getId());
-
-                        assertThat(account.getCurrentBalance())
-                                        .isEqualByComparingTo(account.getInitialBalance()
-                                                        .subtract(BigDecimal.valueOf(150.00)));
-
-                        verify(transactionRepository).findByIdWithRelations(existingTransaction.getId());
-                        verify(transactionRepository).save(any(Transaction.class));
-                        verify(accountRepository, times(2)).save(any(Account.class));
+                        assertThat(existingTransaction.getType()).isEqualTo(CategoryType.EXPENSE);
+                        assertThat(existingTransaction.getSignedAmount()).isNegative();
                 }
 
                 @Test
@@ -469,128 +345,6 @@ public class TransactionServiceTest {
 
                         verify(transactionRepository).findByIdWithRelations(existingTransaction.getId());
                         verify(transactionRepository, never()).save(any());
-                }
-
-                @Test
-                void shouldRecalculateAccountBalanceWhenMovingTransactionToCategoryOfOtherType() {
-                        Account account = AccountTestFixtures.savingsWithId(1L, BigDecimal.valueOf(1000.00));
-                        Category originCategory = incomeCategory(1L, "Salário");
-                        Category targetCategory = expenseCategory(2L, "Mercado");
-
-                        Transaction existingTransaction = TransactionTestFixtures.withId(1L, "Transação Teste",
-                                        BigDecimal.valueOf(100.00),
-                                        LocalDate.of(2026, 7, 28), account, originCategory);
-
-                        account.applyTransaction(existingTransaction.getSignedAmount());
-
-                        givenTransactionExists(existingTransaction);
-                        givenAccountExists(account);
-                        givenCategoryExists(targetCategory);
-                        givenTransactionSaveReturnsArgument();
-
-                        transactionService.updateTransaction(existingTransaction.getId(), "Transação Teste",
-                                        existingTransaction.getAmount(),
-                                        existingTransaction.getDate(), account.getId(), targetCategory.getId());
-
-                        assertThat(existingTransaction.getType()).isEqualTo(CategoryType.EXPENSE);
-                        assertThat(account.getCurrentBalance())
-                                        .isEqualByComparingTo(account.getInitialBalance()
-                                                        .subtract(BigDecimal.valueOf(100.00)));
-                }
-
-        }
-
-        @Nested
-        class BalanceInvariant {
-
-                /** saldo esperado = saldo inicial + soma dos valores com sinal. */
-                private BigDecimal expectedBalance(Account account, List<Transaction> transactions) {
-                        return transactions.stream()
-                                        .map(Transaction::getSignedAmount)
-                                        .reduce(account.getInitialBalance(), BigDecimal::add);
-                }
-
-                /** repo mockado que atribui id no save */
-                private void givenTransactionSaveAssignsId() {
-                        AtomicLong sequence = new AtomicLong(1);
-                        when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> {
-                                Transaction transaction = inv.getArgument(0);
-                                if (transaction.getId() == null) {
-                                        ReflectionTestUtils.setField(transaction, "id", sequence.getAndIncrement());
-                                }
-                                return transaction;
-                        });
-                }
-
-                @Test
-                void balanceShouldMatchSumOfRemainingTransactionsAfterMixedOperations() {
-                        Account account = AccountTestFixtures.withId(1L, "Conta Corrente", BigDecimal.valueOf(1000.00),
-                                        AccountType.CHECKING);
-                        Category salaryCategory = incomeCategory(1L, "Salário");
-                        Category marketCategory = expenseCategory(2L, "Mercado");
-
-                        givenAccountExists(account);
-                        givenCategoryExists(salaryCategory);
-                        givenCategoryExists(marketCategory);
-                        givenTransactionSaveAssignsId();
-
-                        Transaction salary = transactionService.createTransaction("Salário mensal",
-                                        BigDecimal.valueOf(4500.00),
-                                        LocalDate.of(2026, 7, 5), 1L, 1L);
-                        Transaction market = transactionService.createTransaction("Supermercado",
-                                        BigDecimal.valueOf(350.00),
-                                        LocalDate.of(2026, 7, 12), 1L, 2L);
-                        Transaction rent = transactionService.createTransaction("Aluguel",
-                                        BigDecimal.valueOf(1500.00),
-                                        LocalDate.of(2026, 7, 1), 1L, 2L);
-
-                        givenTransactionExists(market);
-                        givenTransactionExists(rent);
-
-                        // Reembolso: mover a transação para uma categoria INCOME é o que inverte
-                        // o sinal, já que o tipo não é mais informado pelo cliente.
-                        transactionService.updateTransaction(market.getId(), "Reembolso mercado",
-                                        BigDecimal.valueOf(400.00),
-                                        market.getDate(), 1L, 1L);
-                        transactionService.removeTransaction(rent.getId());
-
-                        List<Transaction> remainingTransactions = List.of(salary, market);
-
-                        assertThat(account.getCurrentBalance())
-                                        .isEqualByComparingTo(expectedBalance(account, remainingTransactions));
-                }
-
-                @Test
-                void balanceShouldMatchSumOfRemainingTransactionsOnBothAccountsWhenTransactionChangesAccount() {
-                        Account origin = AccountTestFixtures.withId(1L, "Conta Origem", BigDecimal.valueOf(1000.00),
-                                        AccountType.CHECKING);
-                        Account destination = AccountTestFixtures.withId(2L, "Conta Destino",
-                                        BigDecimal.valueOf(500.00),
-                                        AccountType.SAVINGS);
-                        Category transportCategory = expenseCategory(1L, "Transporte");
-
-                        givenAccountExists(origin);
-                        givenAccountExists(destination);
-                        givenCategoryExists(transportCategory);
-                        givenTransactionSaveAssignsId();
-
-                        Transaction moved = transactionService.createTransaction("Gasolina",
-                                        BigDecimal.valueOf(200.00),
-                                        LocalDate.of(2026, 7, 15), 1L, 1L);
-
-                        givenTransactionExists(moved);
-
-                        transactionService.updateTransaction(moved.getId(), moved.getDescription(),
-                                        moved.getAmount(), moved.getDate(),
-                                        2L, 1L);
-
-                        // as DUAS contas têm que fechar. Aqui reverse e apply operam em
-                        // objetos diferentes, e é o único caminho onde um saldo pode ficar certo
-                        // enquanto o outro fica errado.
-                        assertThat(origin.getCurrentBalance())
-                                        .isEqualByComparingTo(expectedBalance(origin, List.of()));
-                        assertThat(destination.getCurrentBalance())
-                                        .isEqualByComparingTo(expectedBalance(destination, List.of(moved)));
                 }
         }
 }

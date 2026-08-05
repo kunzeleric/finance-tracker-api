@@ -1,5 +1,6 @@
 package com.kunzel.finance_tracker.transaction;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.kunzel.finance_tracker.category.Category;
+import com.kunzel.finance_tracker.category.CategoryType;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
@@ -37,5 +39,23 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
   @Query("DELETE FROM Transaction t WHERE t.category.id = :categoryId")
   int deleteByCategoryId(Long categoryId);
 
-  boolean existsByAccountId(Long accountId);
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query("DELETE FROM Transaction t WHERE t.account.id = :accountId")
+  int deleteByAccountId(Long accountId);
+
+  @Query("""
+      SELECT COALESCE(SUM(CASE WHEN t.category.type = :expenseType THEN -t.amount ELSE t.amount END), 0)
+      FROM Transaction t
+      WHERE (:accountId IS NULL OR t.account.id = :accountId)
+      """)
+  BigDecimal signedSum(Long accountId, CategoryType expenseType);
+
+  @Query("""
+      SELECT new com.kunzel.finance_tracker.transaction.AccountSignedSum(
+        t.account.id,
+        SUM(CASE WHEN t.category.type = :expenseType THEN -t.amount ELSE t.amount END))
+      FROM Transaction t
+      GROUP BY t.account.id
+      """)
+  List<AccountSignedSum> signedSumGroupedByAccount(CategoryType expenseType);
 }

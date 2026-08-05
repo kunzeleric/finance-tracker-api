@@ -1,12 +1,10 @@
 -- Seed data. Runs on every startup (H2 in-memory resets each restart).
 -- Requires: spring.jpa.defer-datasource-initialization=true (so this runs AFTER Hibernate builds the schema).
 --
--- NOTE: these are raw INSERTs — they bypass the domain (deposit/withdraw never run).
--- So each account's balances are set MANUALLY:
---   initial_balance = opening balance before tracking (0 here — accounts start empty).
---   current_balance = initial_balance + SUM(signed transactions): INCOME adds, EXPENSE subtracts.
---   INCOME/EXPENSE comes from the transaction's CATEGORY, not from the transaction itself.
--- Keep this invariant when editing: current_balance == initial_balance + SUM(signed txns) per account.
+-- NOTE: accounts store only opening_balance. The current balance is DERIVED at
+-- read time as opening_balance + SUM(signed transactions), so there is no stored
+-- balance to keep in sync here. INCOME/EXPENSE comes from the transaction's
+-- CATEGORY, not from the transaction itself.
 
 -- Categories -------------------------------------------------------------
 -- 'type' classifica a categoria (INCOME/EXPENSE). Cada transação abaixo usa uma
@@ -19,16 +17,17 @@ INSERT INTO categories (id, name, type, color, is_default, creation_date) VALUES
   (5, 'Transporte',   'EXPENSE', '#3B82F6', TRUE, DATE '2026-01-01'),
   (6, 'Lazer',        'EXPENSE', '#EC4899', TRUE, DATE '2026-01-01');
 
--- Accounts (current_balance == initial_balance + net of transactions below) --
+-- Accounts -----------------------------------------------------------------
+-- Saldos derivados que a API vai devolver, dadas as transações abaixo:
 --   1: 0 + 4500 + 1200 - 350.75 - 1500 = 3849.25
 --   2: 0 + 10000                        = 10000.00
 --   3: 0 + 500 - 200 - 60               = 240.00
 --   4: 0 + 800                          = 800.00
-INSERT INTO accounts (id, name, initial_balance, current_balance, creation_date, type) VALUES
-  (1, 'Conta Corrente', 0.00,  3849.25, DATE '2026-01-15', 'CHECKING'),
-  (2, 'Poupança',       0.00, 10000.00, DATE '2026-01-15', 'SAVINGS'),
-  (3, 'Carteira',       0.00,   240.00, DATE '2026-02-01', 'WALLET'),
-  (4, 'Investimentos',  0.00,   800.00, DATE '2026-03-10', 'INVESTMENT');
+INSERT INTO accounts (id, name, opening_balance, color, institution, creation_date, type) VALUES
+  (1, 'Conta Corrente', 0.00, '#7C3AED', 'Nubank',      DATE '2026-01-15', 'CHECKING'),
+  (2, 'Poupança',       0.00, '#0EA5E9', 'Caixa',       DATE '2026-01-15', 'SAVINGS'),
+  (3, 'Carteira',       0.00, '#84CC16', NULL,          DATE '2026-02-01', 'WALLET'),
+  (4, 'Investimentos',  0.00, '#F59E0B', 'XP',          DATE '2026-03-10', 'INVESTMENT');
 
 -- Transactions -----------------------------------------------------------
 -- O sinal de cada linha vem do 'type' da category_id referenciada:
