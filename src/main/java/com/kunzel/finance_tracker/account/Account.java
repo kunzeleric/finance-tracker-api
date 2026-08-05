@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.kunzel.finance_tracker.account.exceptions.InvalidBalanceException;
+import com.kunzel.finance_tracker.shared.HexColor;
 import com.kunzel.finance_tracker.shared.exceptions.ValidationException;
 import com.kunzel.finance_tracker.transaction.Transaction;
 
@@ -34,18 +35,20 @@ public class Account {
   @Column(nullable = false)
   private String name;
 
-  @Column(nullable = false)
-  private BigDecimal initialBalance;
-
-  @Column(nullable = false)
-  private BigDecimal currentBalance;
-
-  @Column(nullable = false)
-  private LocalDate creationDate;
+  @Column(nullable = false, updatable = false)
+  private BigDecimal openingBalance;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private AccountType type;
+
+  @Column(nullable = false)
+  private String color;
+
+  private String institution;
+
+  @Column(nullable = false)
+  private LocalDate creationDate;
 
   @OneToMany(mappedBy = "account")
   @JsonManagedReference
@@ -54,11 +57,12 @@ public class Account {
   protected Account() {
   }
 
-  private Account(String name, BigDecimal initialBalance, AccountType type) {
+  private Account(String name, BigDecimal openingBalance, AccountType type, String color, String institution) {
     this.name = name;
-    this.initialBalance = initialBalance;
-    this.currentBalance = initialBalance;
+    this.openingBalance = openingBalance;
     this.type = type;
+    this.color = HexColor.normalize(color);
+    this.institution = institution;
     this.creationDate = LocalDate.now();
   }
 
@@ -70,34 +74,37 @@ public class Account {
     return name;
   }
 
-  public BigDecimal getInitialBalance() {
-    return initialBalance;
-  }
-
-  public BigDecimal getCurrentBalance() {
-    return currentBalance;
-  }
-
-  public LocalDate getCreationDate() {
-    return creationDate;
+  public BigDecimal getOpeningBalance() {
+    return openingBalance;
   }
 
   public AccountType getType() {
     return type;
   }
 
-  public void changeType(AccountType newType) {
+  public String getColor() {
+    return color;
+  }
+
+  public String getInstitution() {
+    return institution;
+  }
+
+  public LocalDate getCreationDate() {
+    return creationDate;
+  }
+
+  private void changeType(AccountType newType) {
     if (newType == null) {
       throw new ValidationException("Tipo da conta é obrigatório");
     }
-    // TODO: validar se é uma mudança permitida
-    // TODO: registrar um log/auditoria da mudança
     this.type = newType;
   }
 
-  public static Account create(String name, BigDecimal initialBalance, AccountType type) {
-    if (initialBalance == null || initialBalance.compareTo(BigDecimal.ZERO) < 0) {
-      throw new InvalidBalanceException(initialBalance);
+  public static Account create(String name, BigDecimal openingBalance, AccountType type, String color,
+      String institution) {
+    if (openingBalance == null || openingBalance.compareTo(BigDecimal.ZERO) < 0) {
+      throw new InvalidBalanceException(openingBalance);
     }
 
     if (name == null || name.isBlank()) {
@@ -108,10 +115,10 @@ public class Account {
       throw new ValidationException("Tipo da conta é obrigatório");
     }
 
-    return new Account(name, initialBalance, type);
+    return new Account(name, openingBalance, type, color, institution);
   }
 
-  public void update(String name, AccountType type) {
+  public void update(String name, AccountType type, String color, String institution) {
     if (name != null) {
       if (name.isBlank()) {
         throw new ValidationException("Nome da conta não pode estar em branco");
@@ -122,18 +129,13 @@ public class Account {
     if (type != null) {
       changeType(type);
     }
-  }
 
-  // Aplica o efeito de uma transação nova/atualizada, sem validar saldo.
-  public void applyTransaction(BigDecimal signedAmount) {
-    this.currentBalance = this.currentBalance.add(signedAmount);
-  }
+    if (color != null) {
+      this.color = HexColor.normalize(color);
+    }
 
-  // Desfaz o efeito de uma transação existente (delete/update). Não valida.
-  // Desfazer um EXPENSE, gera credito
-  // Desfazer um INCOME, reduz o saldo
-  public void reverseTransaction(BigDecimal signedAmount) {
-    this.currentBalance = this.currentBalance.subtract(signedAmount);
+    if (institution != null) {
+      this.institution = institution.isBlank() ? null : institution;
+    }
   }
-
 }

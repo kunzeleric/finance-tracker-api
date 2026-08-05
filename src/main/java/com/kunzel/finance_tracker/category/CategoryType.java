@@ -1,16 +1,16 @@
-package com.kunzel.finance_tracker.transaction;
+package com.kunzel.finance_tracker.category;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import com.kunzel.finance_tracker.shared.exceptions.ValidationException;
 
-public enum TransactionType {
+public enum CategoryType {
   INCOME("Receita"),
   EXPENSE("Despesa");
 
   private final String description;
 
-  TransactionType(String description) {
+  CategoryType(String description) {
     this.description = description;
   }
 
@@ -19,15 +19,15 @@ public enum TransactionType {
   }
 
   @JsonCreator
-  public static TransactionType fromValue(String value) {
+  public static CategoryType fromValue(String value) {
     if (value == null || value.isBlank()) {
       return null;
     }
     try {
-      return TransactionType.valueOf(value.trim().toUpperCase());
+      return CategoryType.valueOf(value.trim().toUpperCase());
     } catch (IllegalArgumentException ex) {
       throw new ValidationException(
-          "Tipo de transação inválido: '" + value + "'. Valores aceitos: INCOME, EXPENSE");
+          "Tipo de categoria inválido: '" + value + "'. Valores aceitos: INCOME, EXPENSE");
     }
   }
 }
