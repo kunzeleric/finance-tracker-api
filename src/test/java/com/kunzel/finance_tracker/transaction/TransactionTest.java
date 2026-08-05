@@ -12,18 +12,21 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import com.kunzel.finance_tracker.account.Account;
-import com.kunzel.finance_tracker.category.Category;
 import com.kunzel.finance_tracker.account.AccountTestFixtures;
+import com.kunzel.finance_tracker.category.Category;
 import com.kunzel.finance_tracker.category.CategoryTestFixtures;
+import com.kunzel.finance_tracker.category.CategoryType;
 import com.kunzel.finance_tracker.shared.exceptions.ValidationException;
 
 public class TransactionTest {
-  Category category;
+  Category expenseCategory;
+  Category incomeCategory;
   Account account;
 
   @BeforeEach
   void setup() {
-    category = CategoryTestFixtures.defaultCategory();
+    expenseCategory = CategoryTestFixtures.withId(1L, "Alimentação", CategoryType.EXPENSE);
+    incomeCategory = CategoryTestFixtures.withId(2L, "Salário", CategoryType.INCOME);
     account = AccountTestFixtures.defaultAccount();
   }
 
@@ -31,39 +34,64 @@ public class TransactionTest {
   class Constructor {
     @Test
     void shouldCreateTransaction() {
-      Transaction transaction = Transaction.create("Transação teste", TransactionType.EXPENSE,
+      Transaction transaction = Transaction.create("Transação teste",
           BigDecimal.valueOf(100.00), LocalDate.now(),
           account,
-          category);
+          expenseCategory);
 
-      assertEquals(TransactionType.EXPENSE, transaction.getType());
       assertEquals(BigDecimal.valueOf(100.00), transaction.getAmount());
       assertEquals(account, transaction.getAccount());
-      assertEquals(category, transaction.getCategory());
+      assertEquals(expenseCategory, transaction.getCategory());
     }
 
     @Test
     void shouldThrowExceptionWhenTransactionValueIsZero() {
       assertThatThrownBy(
-          () -> Transaction.create("Transação teste", TransactionType.EXPENSE, BigDecimal.valueOf(0.00),
-              LocalDate.now(), account, category))
+          () -> Transaction.create("Transação teste", BigDecimal.valueOf(0.00),
+              LocalDate.now(), account, expenseCategory))
           .isInstanceOf(ValidationException.class);
     }
 
     @Test
     void shouldThrowExceptionWhenTransactionDateIsEmpty() {
       assertThatThrownBy(
-          () -> Transaction.create("Transação teste", TransactionType.EXPENSE, BigDecimal.valueOf(10.00), null,
-              account, category))
+          () -> Transaction.create("Transação teste", BigDecimal.valueOf(10.00), null,
+              account, expenseCategory))
           .isInstanceOf(ValidationException.class);
     }
 
     @Test
-    void shouldThrowExceptionWhenTransactionTypeIsEmpty() {
+    void shouldThrowExceptionWhenCategoryIsEmpty() {
       assertThatThrownBy(
-          () -> Transaction.create("Transação teste", null, BigDecimal.valueOf(10.00), LocalDate.now(),
-              account, category))
+          () -> Transaction.create("Transação teste", BigDecimal.valueOf(10.00), LocalDate.now(),
+              account, null))
           .isInstanceOf(ValidationException.class);
+    }
+  }
+
+  @Nested
+  class DerivedType {
+    @Test
+    void shouldDeriveTypeFromCategory() {
+      Transaction expense = Transaction.create("Mercado", BigDecimal.valueOf(100.00), LocalDate.now(),
+          account, expenseCategory);
+      Transaction income = Transaction.create("Salário", BigDecimal.valueOf(100.00), LocalDate.now(),
+          account, incomeCategory);
+
+      assertThat(expense.getType()).isEqualTo(CategoryType.EXPENSE);
+      assertThat(income.getType()).isEqualTo(CategoryType.INCOME);
+    }
+
+    @Test
+    void shouldFollowCategoryWhenCategoryTypeChanges() {
+      Category category = CategoryTestFixtures.withId(1L, "Freelance", CategoryType.INCOME);
+      Transaction transaction = Transaction.create("Projeto", BigDecimal.valueOf(100.00), LocalDate.now(),
+          account, category);
+
+      category.update(null, null, CategoryType.EXPENSE);
+
+      assertThat(transaction.getType()).isEqualTo(CategoryType.EXPENSE);
+      assertThat(transaction.getSignedAmount()).isNegative();
     }
   }
 
@@ -71,30 +99,32 @@ public class TransactionTest {
   class UpdateTransaction {
     @Test
     void shouldUpdateTransactionDescription() {
-      Transaction transaction = Transaction.create("Transação teste", TransactionType.EXPENSE,
+      Transaction transaction = Transaction.create("Transação teste",
           BigDecimal.valueOf(100.00), LocalDate.now(),
           account,
-          category);
+          expenseCategory);
 
       String transactionNewName = "Transação teste 2";
 
-      transaction.update(transactionNewName, transaction.getType(), transaction.getAmount(),
+      transaction.update(transactionNewName, transaction.getAmount(),
           transaction.getDate(), transaction.getAccount(), transaction.getCategory());
 
       assertThat(transaction.getDescription()).isEqualTo(transactionNewName);
     }
 
     @Test
-    void shouldUpdateTransactionTypeAndFlipSignedAmount() {
-      Transaction transaction = Transaction.create("Transação teste", TransactionType.INCOME,
+    void shouldFlipSignedAmountWhenMovedToCategoryOfOtherType() {
+      Transaction transaction = Transaction.create("Transação teste",
           BigDecimal.valueOf(100.00), LocalDate.now(),
           account,
-          category);
+          incomeCategory);
 
-      transaction.update(transaction.getDescription(), TransactionType.EXPENSE, transaction.getAmount(),
-          transaction.getDate(), transaction.getAccount(), transaction.getCategory());
+      assertThat(transaction.getSignedAmount()).isPositive();
 
-      assertThat(transaction.getType()).isEqualTo(TransactionType.EXPENSE);
+      transaction.update(transaction.getDescription(), transaction.getAmount(),
+          transaction.getDate(), transaction.getAccount(), expenseCategory);
+
+      assertThat(transaction.getType()).isEqualTo(CategoryType.EXPENSE);
       assertThat(transaction.getSignedAmount()).isNegative();
     }
   }
@@ -103,20 +133,20 @@ public class TransactionTest {
   class Amount {
     @Test
     void shouldReturnProperSignedAmountForIncomeTransaction() {
-      Transaction transaction = Transaction.create("Transação Income", TransactionType.INCOME,
+      Transaction transaction = Transaction.create("Transação Income",
           BigDecimal.valueOf(100.00), LocalDate.now(),
           account,
-          category);
+          incomeCategory);
 
       assertThat(transaction.getSignedAmount()).isPositive();
     }
 
     @Test
     void shouldReturnProperSignedAmountForExpenseTransaction() {
-      Transaction transaction = Transaction.create("Transação Expense", TransactionType.EXPENSE,
+      Transaction transaction = Transaction.create("Transação Expense",
           BigDecimal.valueOf(100.00), LocalDate.now(),
           account,
-          category);
+          expenseCategory);
 
       assertThat(transaction.getSignedAmount()).isNegative();
     }

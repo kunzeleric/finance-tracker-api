@@ -5,7 +5,7 @@
 -- So each account's balances are set MANUALLY:
 --   initial_balance = opening balance before tracking (0 here — accounts start empty).
 --   current_balance = initial_balance + SUM(signed transactions): INCOME adds, EXPENSE subtracts.
---   'type' lives on the transaction now (not on the category), so it is set per row below.
+--   INCOME/EXPENSE comes from the transaction's CATEGORY, not from the transaction itself.
 -- Keep this invariant when editing: current_balance == initial_balance + SUM(signed txns) per account.
 
 -- Categories -------------------------------------------------------------
@@ -31,20 +31,22 @@ INSERT INTO accounts (id, name, initial_balance, current_balance, creation_date,
   (4, 'Investimentos',  0.00,   800.00, DATE '2026-03-10', 'INVESTMENT');
 
 -- Transactions -----------------------------------------------------------
-INSERT INTO transactions (id, description, type, amount, date, creation_date, account_id, category_id) VALUES
+-- O sinal de cada linha vem do 'type' da category_id referenciada:
+--   categorias 1-2 são INCOME, categorias 3-6 são EXPENSE.
+INSERT INTO transactions (id, description, amount, date, creation_date, account_id, category_id) VALUES
   -- account 1
-  (1, 'Salário mensal',       'INCOME',   4500.00, DATE '2026-07-05', DATE '2026-07-05', 1, 1),
-  (2, 'Projeto freelance',    'INCOME',   1200.00, DATE '2026-07-10', DATE '2026-07-10', 1, 2),
-  (3, 'Supermercado',         'EXPENSE',   350.75, DATE '2026-07-12', DATE '2026-07-12', 1, 3),
-  (4, 'Aluguel',              'EXPENSE',  1500.00, DATE '2026-07-01', DATE '2026-07-01', 1, 4),
+  (1, 'Salário mensal',        4500.00, DATE '2026-07-05', DATE '2026-07-05', 1, 1),
+  (2, 'Projeto freelance',     1200.00, DATE '2026-07-10', DATE '2026-07-10', 1, 2),
+  (3, 'Supermercado',           350.75, DATE '2026-07-12', DATE '2026-07-12', 1, 3),
+  (4, 'Aluguel',               1500.00, DATE '2026-07-01', DATE '2026-07-01', 1, 4),
   -- account 2
-  (5, 'Depósito poupança',    'INCOME',  10000.00, DATE '2026-07-05', DATE '2026-07-05', 2, 1),
+  (5, 'Depósito poupança',    10000.00, DATE '2026-07-05', DATE '2026-07-05', 2, 1),
   -- account 3
-  (6, 'Dinheiro em carteira', 'INCOME',    500.00, DATE '2026-07-03', DATE '2026-07-03', 3, 2),
-  (7, 'Gasolina',             'EXPENSE',   200.00, DATE '2026-07-15', DATE '2026-07-15', 3, 5),
-  (8, 'Cinema',               'EXPENSE',    60.00, DATE '2026-07-20', DATE '2026-07-20', 3, 6),
+  (6, 'Dinheiro em carteira',   500.00, DATE '2026-07-03', DATE '2026-07-03', 3, 2),
+  (7, 'Gasolina',               200.00, DATE '2026-07-15', DATE '2026-07-15', 3, 5),
+  (8, 'Cinema',                  60.00, DATE '2026-07-20', DATE '2026-07-20', 3, 6),
   -- account 4
-  (9, 'Aporte investimento',  'INCOME',    800.00, DATE '2026-07-08', DATE '2026-07-08', 4, 2);
+  (9, 'Aporte investimento',    800.00, DATE '2026-07-08', DATE '2026-07-08', 4, 2);
 
 -- Advance sequences past the manually-inserted ids so app-generated inserts don't collide.
 ALTER SEQUENCE account_sequence     RESTART WITH 5;

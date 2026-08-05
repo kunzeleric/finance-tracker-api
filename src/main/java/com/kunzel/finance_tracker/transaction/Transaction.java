@@ -6,12 +6,11 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.kunzel.finance_tracker.account.Account;
 import com.kunzel.finance_tracker.category.Category;
+import com.kunzel.finance_tracker.category.CategoryType;
 import com.kunzel.finance_tracker.shared.exceptions.ValidationException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -31,10 +30,6 @@ public class Transaction {
 
   @Column(nullable = false)
   private String description;
-
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private TransactionType type;
 
   @Column(nullable = false)
   private BigDecimal amount;
@@ -58,11 +53,10 @@ public class Transaction {
   protected Transaction() {
   }
 
-  private Transaction(String description, TransactionType type, BigDecimal amount, LocalDate date, Account account,
+  private Transaction(String description, BigDecimal amount, LocalDate date, Account account,
       Category category) {
-    validate(description, type, amount, date, account, category);
+    validate(description, amount, date, account, category);
     this.description = description;
-    this.type = type;
     this.amount = amount;
     this.date = date;
     this.creationDate = LocalDate.now();
@@ -78,8 +72,8 @@ public class Transaction {
     return description;
   }
 
-  public TransactionType getType() {
-    return type;
+  public CategoryType getType() {
+    return category.getType();
   }
 
   public BigDecimal getAmount() {
@@ -102,15 +96,11 @@ public class Transaction {
     return category;
   }
 
-  private static void validate(String description, TransactionType type, BigDecimal amount, LocalDate date,
+  private static void validate(String description, BigDecimal amount, LocalDate date,
       Account account,
       Category category) {
     if (description == null || description.isBlank()) {
       throw new ValidationException("Descrição da transação não pode estar em branco");
-    }
-
-    if (type == null) {
-      throw new ValidationException("Tipo da transação é obrigatório");
     }
 
     if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
@@ -127,17 +117,16 @@ public class Transaction {
     }
   }
 
-  public static Transaction create(String description, TransactionType type, BigDecimal amount, LocalDate date,
+  public static Transaction create(String description, BigDecimal amount, LocalDate date,
       Account account,
       Category category) {
-    return new Transaction(description, type, amount, date, account, category);
+    return new Transaction(description, amount, date, account, category);
   }
 
-  public void update(String description, TransactionType type, BigDecimal amount, LocalDate date, Account account,
+  public void update(String description, BigDecimal amount, LocalDate date, Account account,
       Category category) {
-    validate(description, type, amount, date, account, category);
+    validate(description, amount, date, account, category);
     this.description = description;
-    this.type = type;
     this.amount = amount;
     this.date = date;
     this.account = account;
@@ -145,7 +134,7 @@ public class Transaction {
   }
 
   public BigDecimal getSignedAmount() {
-    return this.getType() == TransactionType.EXPENSE
+    return this.getType() == CategoryType.EXPENSE
         ? this.amount.negate()
         : this.amount;
   }
